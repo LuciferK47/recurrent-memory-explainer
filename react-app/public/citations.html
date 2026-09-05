@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citations & Literature — Recurrent Memory Explainer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {delimiters: [{left: '365967', right: '365967', display: true}, {left: '$', right: '$', display: false}]});"></script>
+    <style>
+        :root {
+            --bg-canvas: #f8f6f0;
+            --bg-surface: #ffffff;
+            --text-ink: #1a1917;
+            --text-muted: #6b6964;
+            --border: #e2ded4;
+            --accent-memory: #2563eb;
+            --font-display: 'Fraunces', serif;
+            --font-body: 'Inter', -apple-system, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, monospace;
+        }
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-ink);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            margin: 0;
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--accent-memory);
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+            padding: 0.35rem 0.75rem;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 6px;
+        }
+        .nav-back:hover {
+            background: rgba(37, 99, 235, 0.15);
+        }
+        h1 {
+            font-family: var(--font-display);
+            font-size: 2.25rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+        h2 {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        hr {
+            border: 0;
+            border-top: 1px solid var(--border);
+            margin: 2rem 0;
+        }
+        a {
+            color: var(--accent-memory);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        ol.citation-list > li {
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+        ul {
+            margin-top: 0.5rem;
+            padding-left: 1.25rem;
+        }
+        li {
+            margin-bottom: 0.35rem;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            background: #f1ede4;
+            padding: 0.15rem 0.35rem;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../" class="nav-back">← Back to Interactive Explainer</a>
+        <h1>Citations & Source Literature</h1>
+
+<p>This document catalogs all primary literature and foundational research referenced across the <strong>Recurrent Memory Explainer</strong> interactive artifact and documentation.</p>
+
+<hr/>
+
+<h2>Group A: General Recurrent Memory & In-Context Learning (2022–2026)</h2>
+
+<p>These peer-reviewed and preprint contributions establish the theoretical context for fixed-size recurrent memory, test-time associative writes, and capacity–interference dynamics in neural sequence models:</p>
+
+<ol class="citation-list">
+<li><strong>Infini-attention (Linear Memory in Attention Blocks)</strong>
+</ol>
+<ul>
+<li><strong>Authors</strong>: Tsendsuren Munkhdalai, Manaal Faruqui, Siddharth Gopal</li>
+<p>   <em> <strong>Title</strong>: </em>Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention*</p>
+<li><strong>Preprint</strong>: <a href="https://arxiv.org/abs/2404.07143" target="_blank" rel="noopener noreferrer">arXiv:2404.07143</a> (April 2024)</li>
+<li><strong>Relevance to Explainer</strong>: Demonstrates how a fixed-size compressive memory state ($d \times d$) can be updated using outer-product Hebbian-style writes alongside local masked multi-head attention, enabling bounded-memory context scaling up to 1M+ tokens without $O(n^2)$ KV-cache footprint.</li>
+</ul>
+
+<ol class="citation-list">
+<li><strong>Titans (Test-Time Memory Modules)</strong>
+</ol>
+<ul>
+<li><strong>Authors</strong>: Ali Behrouz, Peilin Zhong, Vahab Mirrokni</li>
+<p>   <em> <strong>Title</strong>: </em>Titans: Learning to Memorize at Test Time*</p>
+<li><strong>Preprint</strong>: <a href="https://arxiv.org/abs/2501.00663" target="_blank" rel="noopener noreferrer">arXiv:2501.00663</a> (January 2025)</li>
+<li><strong>Relevance to Explainer</strong>: Establishes a formal distinction between fast short-term associative attention and a recurrent deep neural memory module that actively learns key–value associations at inference time, scaling to contexts beyond 2M tokens.</li>
+</ul>
+
+<ol class="citation-list">
+<li><strong>Gated DeltaNet (Selective State Writes & Delta Rule)</strong>
+</ol>
+<ul>
+<li><strong>Authors</strong>: Songlin Yang, Jan Kautz, Ali Hatamizadeh (MIT CSAIL / NVIDIA; ICLR 2025)</li>
+<p>   <em> <strong>Title</strong>: </em>Gated Delta Networks: Improving Mamba2 with Delta Rule*</p>
+<li><strong>Preprint</strong>: <a href="https://arxiv.org/abs/2412.06464" target="_blank" rel="noopener noreferrer">arXiv:2412.06464</a> (December 2024; revised March 2025)</li>
+<li><strong>Relevance to Explainer</strong>: Investigates the catastrophic interference problem in outer-product recurrent matrices and proposes gating combined with the delta-rule update ($M \leftarrow M - \beta (M k - v) k^T$) to selectively erase outdated associations and mitigate cross-talk.</li>
+</ul>
+
+<ol class="citation-list">
+<li><strong>Variational Linear Attention (Stable Associative Memory)</strong>
+</ol>
+<ul>
+<li><strong>Authors</strong>: Vishal Pandey, Gopal Singh</li>
+<p>   <em> <strong>Title</strong>: </em>Variational Linear Attention: Stable Associative Memory for Long-Context Transformers*</p>
+<li><strong>Preprint</strong>: <a href="https://arxiv.org/abs/2605.11196" target="_blank" rel="noopener noreferrer">arXiv:2605.11196</a> (May 2026)</li>
+<li><strong>Relevance to Explainer</strong>: Reframes the linear memory update as an online regularized least-squares problem with an adaptive penalty matrix maintained via the Sherman-Morrison rank-1 formula. Proves that normalizing write directions to unit length guarantees recurrence Jacobian spectral norm of exactly 1 with bounded state growth (reducing $\|S_t\|_F$ by $109\times$ relative to standard linear attention at $T=1000$). Achieves near-perfect exact-match associative recall within the per-head capacity regime and maintains 62% accuracy at the capacity boundary.</li>
+</ul>
+
+<hr/>
+
+<h2>Group B: BDH & BDH-CQ Primary Sources</h2>
+
+<p>Primary research from Pathway establishing the Dragon Hatchling (BDH) architecture and its in-context demonstration learning extension (BDH-CQ):</p>
+
+<ol class="citation-list">
+<li><strong>The Dragon Hatchling (BDH Foundation Paper)</strong>
+</ol>
+<ul>
+<li><strong>Authors</strong>: Adrian Kosowski, Przemysław Uznański, Jan Chorowski, Zuzanna Stamirowska, Michał Bartoszkiewicz (Pathway Research)</li>
+<p>   <em> <strong>Title</strong>: </em>The Dragon Hatchling: The Missing Link between the Transformer and Models of the Brain*</p>
+<li><strong>Preprint</strong>: <a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noopener noreferrer">arXiv:2509.26507</a> (September 2025)</li>
+<li><strong>Relevance to Explainer</strong>: Introduces the scale-free, biologically-inspired graph of neuron particles where working memory emerges directly from Hebbian synaptic plasticity ($M \leftarrow M + v k^T$). Documents ~5% activation sparsity, monosemantic synaptic connections, and the GPU-efficient linear attention formulation (BDH-GPU, Section 4).</li>
+</ul>
+
+<ol class="citation-list">
+<li><strong>BDH-CQ (Demonstration Learning with Recurrent Latent Reasoning)</strong>
+</ol>
+<ul>
+<li><strong>Authors</strong>: Björn Engdahl, Adrian Kosowski, Jan Chorowski, Zuzanna Stamirowska, Przemysław Uznański, Junlin Jiang, Rohan Phadke, Remigiusz Kinas, Richard Zhong (Pathway Research Team)</li>
+<p>   <em> <strong>Title</strong>: </em>BDH-CQ: In-Context Learning with Recurrent Latent Reasoning*</p>
+<li><strong>Preprint</strong>: <a href="https://arxiv.org/abs/2608.09888" target="_blank" rel="noopener noreferrer">arXiv:2608.09888</a> (August 2026)</li>
+<li><strong>Hugging Face Paper Discussion</strong>: <a href="https://huggingface.co/papers/2608.09888" target="_blank" rel="noopener noreferrer">huggingface.co/papers/2608.09888</a></li>
+<li><strong>Relevance to Explainer</strong>: Details how demonstration input–output pairs are absorbed directly into recurrent latent state at inference time without gradient descent or verbose chain-of-thought token generation. Evaluates the self-reported 29.5% pass@2 benchmark on ARC-AGI-1 ($0.0007/task, with a partner-institution audit) and explicitly documents the 0/72 failure on color-swap composition.</li>
+</ul>
+
+<ol class="citation-list">
+<li><strong>Pathway BDH Reference Implementation</strong>
+</ol>
+<ul>
+<li><strong>Source Repository</strong>: <a href="https://github.com/pathwaycom/bdh" target="_blank" rel="noopener noreferrer">https://github.com/pathwaycom/bdh</a></li>
+<li><strong>Note on Scope</strong>: Official Pathway educational toy implementation demonstrating the neuron dynamics (labeled by Pathway as not intended to reproduce large-scale internal benchmarks).</li>
+</ul>
+
+<ol class="citation-list">
+<li><strong>Pathway Research Documentation & Official Overviews</strong>
+<p>   <em> </em>BDH Technical Explainer*: <a href="https://pathway.com/research/bdh-explainer" target="_blank" rel="noopener noreferrer">pathway.com/research/bdh-explainer</a></p>
+<p>   <em> </em>Introducing BDH-CQ*: <a href="https://pathway.com/research/introducing-bdh-cq" target="_blank" rel="noopener noreferrer">pathway.com/research/introducing-bdh-cq</a></p>
+</ol>
+
+<hr/>
+
+<h2>Licensing & Derivative Records</h2>
+
+<ul>
+<li><strong>Interactive Explainer Code</strong>: MIT License (Copyright &copy; 2026 Team DataForge × Pathway).</li>
+<li><strong>Fonts</strong>: Departure Mono, Inter, Fraunces (SIL Open Font License 1.1).</li>
+<li><strong>Math Engine</strong>: KaTeX (MIT License).</li>
+</ul>
+
+    </div>
+</body>
+</html>

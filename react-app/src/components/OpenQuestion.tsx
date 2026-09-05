@@ -21,12 +21,12 @@ export const OpenQuestion: React.FC = () => {
             </a>
             ), Variational Linear Attention ({' '}
             <a
-              href="https://arxiv.org/abs/2412.09871"
+              href="https://arxiv.org/abs/2605.11196"
               target="_blank"
               rel="noopener noreferrer"
               className="text-ink hover:text-memory underline"
             >
-              arXiv:2412.09871
+              arXiv:2605.11196
             </a>
             ).
           </p>

@@ -10,6 +10,7 @@ import { CheckUnderstanding } from './components/CheckUnderstanding';
 import { EvidencePanel } from './components/EvidencePanel';
 import { OpenQuestion } from './components/OpenQuestion';
 import { Footer } from './components/Footer';
+import { CitationsModal } from './components/CitationsModal';
 import {
   Matrix,
   createZeroMatrix,
@@ -38,6 +39,19 @@ export const App: React.FC = () => {
   const [matrix, setMatrix] = useState<Matrix>(() => createZeroMatrix(8));
   const [pairs, setPairs] = useState<StoredPair[]>([]);
   const [pairCounter, setPairCounter] = useState<number>(0);
+  const [showCitations, setShowCitations] = useState<boolean>(() => {
+    return typeof window !== 'undefined' && window.location.hash === '#citations';
+  });
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#citations') {
+        setShowCitations(true);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   // Staged hero-load reveal of the preset populating into the matrix, played once
   useEffect(() => {
@@ -158,7 +172,16 @@ export const App: React.FC = () => {
         <OpenQuestion />
       </main>
 
-      <Footer />
+      <Footer onOpenCitations={() => setShowCitations(true)} />
+      <CitationsModal
+        isOpen={showCitations}
+        onClose={() => {
+          setShowCitations(false);
+          if (window.location.hash === '#citations') {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        }}
+      />
     </div>
   );
 };

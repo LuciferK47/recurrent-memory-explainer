@@ -65,3 +65,65 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Citations formatting & typography */
+.citations-content h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.citations-content h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #dee2de;
+  padding-bottom: 0.25rem;
+}
+
+.citations-content p {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.citations-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.citations-content ol > li {
+  margin-bottom: 1rem;
+}
+
+.citations-content ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.citations-content li {
+  margin-bottom: 0.25rem;
+}
+
+.citations-content hr {
+  border: 0;
+  border-top: 1px solid #dee2de;
+  margin: 1.5rem 0;
+}
+
+.citations-content a {
+  color: #1d6fa5;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.citations-content a:hover {
+  color: #144e75;
+}
+

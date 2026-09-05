@@ -1,15 +1,19 @@
 import React from 'react';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onOpenCitations?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onOpenCitations }) => {
+  const baseUrl = import.meta.env.BASE_URL || './';
+
   return (
-    <footer className="py-12 bg-surface border-t border-border text-center">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <p className="font-display text-lg text-ink mb-2">
-          DataForge 2026 &times; Pathway Track — In-Context Learning with Recurrent Memory
+    <footer className="border-t border-border bg-surface/50 py-8 px-4 sm:px-6">
+      <div className="max-w-5xl mx-auto flex flex-col gap-4 text-center">
+        <p className="text-xs text-ink font-medium m-0">
+          <strong>DataForge 2026 &times; Pathway Track</strong> &mdash; In-Context Learning with Recurrent Memory
         </p>
-        <p className="text-xs text-ink-muted mb-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-          <span>Built with AI assistance. All content team-reviewed.</span>
-          <span className="hidden sm:inline">&middot;</span>
+        <p className="text-xs text-ink-muted m-0 flex flex-wrap justify-center items-center gap-x-2 gap-y-1">
           <a
             href="https://github.com/LuciferK47/recurrent-memory-explainer"
             target="_blank"
@@ -20,7 +24,7 @@ export const Footer: React.FC = () => {
           </a>
           <span>&middot;</span>
           <a
-            href="/README.md"
+            href={`${baseUrl}README.md`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-ink hover:text-memory underline"
@@ -29,16 +33,20 @@ export const Footer: React.FC = () => {
           </a>
           <span>&middot;</span>
           <a
-            href="/docs/citations.md"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-ink hover:text-memory underline"
+            href="#citations"
+            onClick={(e) => {
+              if (onOpenCitations) {
+                e.preventDefault();
+                onOpenCitations();
+              }
+            }}
+            className="text-ink hover:text-memory underline font-medium"
           >
             Citations
           </a>
           <span>&middot;</span>
           <a
-            href="/concept_summary.pdf"
+            href={`${baseUrl}concept_summary.pdf`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-ink hover:text-memory underline"

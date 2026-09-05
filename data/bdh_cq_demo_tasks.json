@@ -1,0 +1,481 @@
+{
+  "description": "Toy ARC-style tasks for the BDH-CQ educational walkthrough. These are ORIGINAL examples created for this explainer, NOT taken from the ARC-AGI dataset.",
+  "label": "ILLUSTRATION \u2014 these tasks demonstrate the concept of learning from demonstrations, not actual BDH-CQ inference.",
+  "color_map": {
+    "0": "#1a1a2e",
+    "1": "#e74c3c",
+    "2": "#2ecc71",
+    "3": "#3498db",
+    "4": "#f39c12",
+    "5": "#9b59b6",
+    "6": "#e91e63",
+    "7": "#ff5722",
+    "8": "#00bcd4",
+    "9": "#8bc34a"
+  },
+  "tasks": [
+    {
+      "id": "fill_color",
+      "name": "Fill Enclosed Region",
+      "description": "Given a grid with a rectangular border, fill the interior with the border's color.",
+      "demonstrations": [
+        {
+          "input": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              1,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              1,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "output": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              1,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              1,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              1,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ]
+        },
+        {
+          "input": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              2,
+              2,
+              2,
+              2,
+              0
+            ],
+            [
+              0,
+              2,
+              0,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              2,
+              0,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              2,
+              2,
+              2,
+              2,
+              0
+            ]
+          ],
+          "output": [
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              2,
+              2,
+              2,
+              2,
+              0
+            ],
+            [
+              0,
+              2,
+              2,
+              2,
+              2,
+              0
+            ],
+            [
+              0,
+              2,
+              2,
+              2,
+              2,
+              0
+            ],
+            [
+              0,
+              2,
+              2,
+              2,
+              2,
+              0
+            ]
+          ]
+        }
+      ],
+      "test": {
+        "input": [
+          [
+            3,
+            3,
+            3,
+            3
+          ],
+          [
+            3,
+            0,
+            0,
+            3
+          ],
+          [
+            3,
+            0,
+            0,
+            3
+          ],
+          [
+            3,
+            3,
+            3,
+            3
+          ]
+        ],
+        "expected_output": [
+          [
+            3,
+            3,
+            3,
+            3
+          ],
+          [
+            3,
+            3,
+            3,
+            3
+          ],
+          [
+            3,
+            3,
+            3,
+            3
+          ],
+          [
+            3,
+            3,
+            3,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "id": "mirror_horizontal",
+      "name": "Horizontal Mirror",
+      "description": "Reflect the non-zero pattern horizontally across the grid's vertical center.",
+      "demonstrations": [
+        {
+          "input": [
+            [
+              1,
+              0,
+              0
+            ],
+            [
+              1,
+              1,
+              0
+            ],
+            [
+              1,
+              0,
+              0
+            ]
+          ],
+          "output": [
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              0,
+              0,
+              1
+            ]
+          ]
+        },
+        {
+          "input": [
+            [
+              2,
+              2,
+              0,
+              0
+            ],
+            [
+              0,
+              2,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "output": [
+            [
+              0,
+              0,
+              2,
+              2
+            ],
+            [
+              0,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0
+            ]
+          ]
+        }
+      ],
+      "test": {
+        "input": [
+          [
+            4,
+            0,
+            0,
+            0
+          ],
+          [
+            4,
+            4,
+            0,
+            0
+          ],
+          [
+            4,
+            4,
+            4,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "expected_output": [
+          [
+            0,
+            0,
+            0,
+            4
+          ],
+          [
+            0,
+            0,
+            4,
+            4
+          ],
+          [
+            0,
+            4,
+            4,
+            4
+          ],
+          [
+            0,
+            0,
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "id": "count_and_fill",
+      "name": "Count Distinct Colors",
+      "description": "Count the number of distinct non-zero colors in the input. Output a 1\u00d7N grid filled with color 1.",
+      "demonstrations": [
+        {
+          "input": [
+            [
+              1,
+              0,
+              2
+            ],
+            [
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "output": [
+            [
+              1,
+              1,
+              1
+            ]
+          ]
+        },
+        {
+          "input": [
+            [
+              5,
+              5,
+              0
+            ],
+            [
+              0,
+              0,
+              7
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ],
+          "output": [
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      ],
+      "test": {
+        "input": [
+          [
+            0,
+            4,
+            0
+          ],
+          [
+            6,
+            0,
+            2
+          ],
+          [
+            0,
+            8,
+            0
+          ]
+        ],
+        "expected_output": [
+          [
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>In-Context Learning with Recurrent Memory — Concept Summary</title>
+<style>
+  @page {
+    size: letter;
+    margin: 0.35in 0.45in;
+  }
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #0f172a;
+    background: #ffffff;
+    font-size: 8.5pt;
+    line-height: 1.35;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    font-size: 13pt;
+    margin: 0 0 2pt 0;
+    color: #020617;
+    letter-spacing: -0.01em;
+  }
+  .header-meta {
+    font-size: 7.5pt;
+    color: #475569;
+    margin-bottom: 6pt;
+    padding-bottom: 4pt;
+    border-bottom: 1.5pt solid #0284c7;
+    display: flex;
+    justify-content: space-between;
+  }
+  .header-meta strong {
+    color: #0284c7;
+  }
+  h2 {
+    font-size: 9.5pt;
+    color: #0369a1;
+    margin: 5pt 0 2pt 0;
+    border-bottom: 0.5pt solid #e2e8f0;
+    padding-bottom: 1pt;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  p {
+    margin: 0 0 4pt 0;
+  }
+  blockquote {
+    margin: 3pt 0;
+    padding: 3pt 8pt;
+    background: #f0f9ff;
+    border-left: 3pt solid #0284c7;
+    font-style: italic;
+    font-size: 8pt;
+    color: #0c4a6e;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8pt;
+  }
+  .math-box {
+    background: #f8fafc;
+    border: 0.5pt solid #cbd5e1;
+    border-radius: 3pt;
+    padding: 3pt 6pt;
+    margin: 2pt 0 4pt 0;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 7.8pt;
+    color: #0f172a;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3pt 0 4pt 0;
+    font-size: 7.2pt;
+  }
+  th, td {
+    border: 0.5pt solid #cbd5e1;
+    padding: 2.5pt 4pt;
+    text-align: left;
+  }
+  th {
+    background: #f1f5f9;
+    color: #0f172a;
+    font-weight: 600;
+  }
+  ul {
+    margin: 0 0 4pt 0;
+    padding-left: 12pt;
+  }
+  li {
+    margin-bottom: 1.5pt;
+  }
+  .highlight-tag {
+    display: inline-block;
+    padding: 0.5pt 3pt;
+    border-radius: 2pt;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-weight: 600;
+    font-size: 7pt;
+  }
+</style>
+</head>
+<body>
+
+<h1>In-Context Learning with Recurrent Memory: State, Capacity, and Interference</h1>
+<div class="header-meta">
+  <div><strong>DataForge 2026 × Pathway Track</strong> | Authoritative Concept Briefing</div>
+  <div>Team Public Repo: <code>github.com/LuciferK47/recurrent-memory-explainer</code></div>
+  <div>Core Papers: arXiv:2509.26507 &middot; arXiv:2608.09888</div>
+</div>
+
+<h2>1. Executive Summary &amp; Locked Claim</h2>
+<p>
+Autoregressive Transformers enable in-context learning via an explicit key&ndash;value (KV) cache scaling linearly with sequence length ($O(n)$ memory footprint per sequence), creating massive memory bandwidth and VRAM constraints. Fixed-size recurrent memory replaces unbounded buffers with a state matrix $M \in \mathbb{R}^{d \times d}$, achieving strictly $O(1)$ memory complexity during inference.
+</p>
+<blockquote>
+<strong>Locked Claim:</strong> &ldquo;A fixed-size recurrent memory can absorb key&ndash;value associations from demonstrations and recall them accurately &mdash; until the number of associations exceeds the memory's rank, at which point recall degrades through interference in a predictable, measurable way.&rdquo;
+</blockquote>
+
+<div class="grid-2">
+  <div>
+    <h2>2. Algebraic Substrate: Hebbian Write &amp; Readout</h2>
+    <p>Associative memory updates via two primitive tensor operations:</p>
+    <div class="math-box">
+      <strong>1. Outer-Product Write:</strong> M &larr; M + v &middot; k<sup>T</sup> &nbsp;(Hebbian rank-1 write)<br>
+      <strong>2. Linear Readout:</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&#770; = M &middot; q = &sum;<sub>i=1..N</sub> v<sub>i</sub> (k<sub>i</sub><sup>T</sup> q)
+    </div>
+    <p>
+      For query $q = k_j$, readout decomposes into signal and cross-talk:
+      <br><code>v&#770; = v<sub>j</sub> (k<sub>j</sub><sup>T</sup> k<sub>j</sub>) + &sum;<sub>i &ne; j</sub> v<sub>i</sub> (k<sub>i</sub><sup>T</sup> k<sub>j</sub>) = v<sub>j</sub> + &sum;<sub>i &ne; j</sub> v<sub>i</sub> (k<sub>i</sub><sup>T</sup> k<sub>j</sub>)</code>.
+      If keys are mutually orthogonal (<code>k<sub>i</sub><sup>T</sup> k<sub>j</sub> = 0</code>), retrieval is exact.
+    </p>
+  </div>
+  <div>
+    <h2>3. The Capacity Cliff &amp; Interference</h2>
+    <p>
+      In $\mathbb{R}^d$, at most $d$ orthogonal vectors exist. Once stored pairs $N > d$, cross-talk corrupts retrieval:
+    </p>
+    <ul>
+      <li><strong>Sub-capacity ($N \le d$):</strong> Cosine similarity $\approx 1.0$; near-perfect recall.</li>
+      <li><strong>Critical Threshold ($N \approx d$):</strong> Interference noise equals primary signal.</li>
+      <li><strong>Interference Regime ($N \gg d$):</strong> Accuracy plunges toward $1/\sqrt{d}$ noise floor.</li>
+    </ul>
+    <p>
+      Interference is not a numerical error; it is the fundamental information-theoretic tax of bounded state compression.
+    </p>
+  </div>
+</div>
+
+<h2>4. Architectural Comparison</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Architecture</th>
+      <th>Memory Footprint</th>
+      <th>State Update Rule</th>
+      <th>In-Context Learning Mechanism</th>
+      <th>Primary Bottleneck</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Transformer (KV-Cache)</strong></td>
+      <td>$O(n)$ sequence length</td>
+      <td>Append key &amp; value token vectors</td>
+      <td>In-context lookup over token buffer</td>
+      <td>VRAM &amp; memory bandwidth exhaustion</td>
+    </tr>
+    <tr>
+      <td><strong>Infini-attention (arXiv:2404.07143)</strong></td>
+      <td>$O(1)$ compressive block</td>
+      <td>M &larr; M + &sigma;(v) &middot; &sigma;(k)<sup>T</sup></td>
+      <td>Linear memory readout + local attention</td>
+      <td>State saturation over unbounded contexts</td>
+    </tr>
+    <tr>
+      <td><strong>Titans (arXiv:2501.00663)</strong></td>
+      <td>$O(1)$ neural memory module</td>
+      <td>Neural gradient test-time step</td>
+      <td>Learned test-time associative memory</td>
+      <td>Dual-system computational overhead</td>
+    </tr>
+    <tr>
+      <td><strong>BDH / BDH-CQ (Pathway)</strong></td>
+      <td>$O(1)$ synaptic state matrix</td>
+      <td>M &larr; M + v &middot; k<sup>T</sup> (Hebbian)</td>
+      <td>Zero-gradient demonstration absorption</td>
+      <td>Orthogonality capacity cliff ($N > d$)</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="grid-2">
+  <div>
+    <h2>5. Role of BDH &amp; BDH-CQ</h2>
+    <ul>
+      <li><strong>BDH (arXiv:2509.26507):</strong> Biologically-inspired, scale-free graph of neuron particles where working memory emerges directly from Hebbian synaptic plasticity. Low-rank GPU formulation runs with ~5% activation sparsity and monosemantic wiring.</li>
+      <li><strong>BDH-CQ (arXiv:2608.09888):</strong> Absorbs demonstration pairs (e.g. ARC-AGI grids) into recurrent state without backpropagation or chain-of-thought tokens, querying state to output solutions.</li>
+    </ul>
+  </div>
+  <div>
+    <h2>6. Evidence Discipline &amp; Honest Limitations</h2>
+    <ul>
+      <li><span class="highlight-tag">Self-Reported Benchmark</span> <strong>29.5% pass@2</strong> on ARC-AGI-1 ($0.0007/task) is audited by partner-institution co-authors, not an arm's-length external lab. Scaling laws across multi-scale models remain unproven.</li>
+      <li><strong>Disclosed Failure:</strong> BDH-CQ failed completely (0/72) on color-swap composition tasks, exposing vulnerability of pure outer-product states to relational logic.</li>
+      <li><strong>Didactic Scope:</strong> Explainer runs live mathematical Hebbian updates in JS/TS to illuminate principles, without misrepresenting itself as the proprietary engine.</li>
+    </ul>
+  </div>
+</div>
+
+</body>
+</html>

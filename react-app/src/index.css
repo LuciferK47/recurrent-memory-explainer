@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Departure Mono';
+  src: url('/fonts/DepartureMono-Regular.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/projectnoonnu/2409-1@1.0/DepartureMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background-color: #fefffc;
+    color: #171717;
+  }
+
+  body {
+    background-color: #fefffc;
+    color: #171717;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 400;
+    color: #171717;
+    letter-spacing: -0.03em;
+  }
+
+  :focus-visible {
+    outline: 2px solid #1d6fa5;
+    outline-offset: 2px;
+  }
+}
+
+/* Subtle retro-terminal hardware styling — bounded exclusively to the 2 live-experiment panels */
+.retro-terminal-frame {
+  position: relative;
+  box-shadow: 0 0 0 1px #dee2de, 0 2px 10px rgba(29, 111, 165, 0.05);
+}
+
+.retro-terminal-frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.025) 50%);
+  background-size: 100% 4px;
+  border-radius: inherit;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

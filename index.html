@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recurrent Memory Explainer — How Fixed-Size State Learns and Forgets</title>
+    <meta name="description" content="Interactive explainer: how fixed-size recurrent memory enables in-context learning through Hebbian writes, and where it breaks through interference. Featuring BDH/BDH-CQ case study.">
+    <meta property="og:title" content="Recurrent Memory Explainer — DataForge 2026 × Pathway">
+    <meta property="og:description" content="A fixed-size memory can absorb key-value associations — until interference degrades recall. Explore the mechanism live.">
+    <meta property="og:type" content="website">
+
+    <!-- Fonts: Fraunces (Editorial Display Serif) + Inter (Neutral Sans) + JetBrains Mono (Real numeric/code data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/style.css">
+    <!-- KaTeX for equation rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+</head>
+<body>
+
+<!-- ===== Frosted Navigation Pill ===== -->
+<nav class="nav-pill" id="site-nav" aria-label="Explainer navigation">
+    <div class="nav-brand">
+        <span class="nav-brand-dot"></span>
+        <span class="nav-brand-text">DataForge 2026 × Pathway</span>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-links">
+        <a href="#hero" class="nav-link active" data-section="hero">Overview</a>
+        <a href="#problem" class="nav-link" data-section="problem">01 The Problem</a>
+        <a href="#memory" class="nav-link" data-section="memory">02 Memory Lab</a>
+        <a href="#bdh" class="nav-link" data-section="bdh">03 BDH Module</a>
+        <a href="#interference" class="nav-link" data-section="interference">04 Breaking Point</a>
+        <a href="#evidence" class="nav-link" data-section="evidence">05 Evidence</a>
+    </div>
+</nav>
+
+<!-- ===== Section 0: Hero ===== -->
+<section id="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">How Fixed-Size Memory<br>Learns — and Forgets</h1>
+        
+        <div class="hero-claim">
+            <strong>Claim:</strong> A fixed-size recurrent memory can absorb key–value associations from demonstrations and recall them accurately — <em>until the number of associations exceeds the memory's rank, at which point recall degrades through interference</em> in a predictable, measurable way.
+        </div>
+
+        <p class="hero-audience">
+            For CS/ML students who know what attention is. Prerequisites: basic linear algebra.
+        </p>
+
+        <div class="hero-instrument-peek">
+            <div class="hero-peek-status">
+                <span class="live-indicator"></span>
+                <span>Active Instrument Register: <strong>4 demonstration pairs</strong> pre-loaded in $d = 8$ memory matrix</span>
+            </div>
+        </div>
+
+        <div class="hero-action-row">
+            <a href="#problem" class="btn btn-outline-primary">Start Walkthrough <span class="btn-arrow">→</span></a>
+            <a href="#memory" class="btn btn-outline-secondary">Jump to Live Lab ⚡</a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Section 1: The Problem ===== -->
+<section id="problem">
+    <div class="container">
+        <div class="section-num">01 The Problem</div>
+        <h2 class="section-title">Transformers Remember Everything. That's Expensive.</h2>
+        <p class="section-subtitle">
+            Standard Transformers store every past token in a key–value cache that grows linearly with context length. More context = more memory = more cost.
+        </p>
+
+        <div class="viz-grid">
+            <div class="instrument-panel">
+                <div class="instrument-header">
+                    <span class="instrument-title">KV-Cache Growth</span>
+                    <span class="instrument-badge">O(n) Scaling</span>
+                </div>
+                <div id="kv-cache-viz" class="chart-box">
+                    <canvas id="kv-growth-canvas"></canvas>
+                </div>
+                <p class="panel-caption">
+                    Each new token adds a new key and value vector. At sequence length <em>n</em>, memory usage is <strong>O(n)</strong>.
+                    For long conversations, this becomes the dominant cost.
+                </p>
+            </div>
+
+            <div class="instrument-panel">
+                <div class="instrument-header">
+                    <span class="instrument-title">The Alternative: Fixed-Size State</span>
+                    <span class="instrument-badge">O(1) Memory</span>
+                </div>
+                <div id="fixed-state-viz" class="chart-box">
+                    <canvas id="fixed-state-canvas"></canvas>
+                </div>
+                <p class="panel-caption">
+                    What if instead of growing the cache, we compress everything into a <strong>fixed-size matrix</strong>?
+                    Memory stays constant — <strong>O(1)</strong> — regardless of sequence length. But there's a cost…
+                </p>
+            </div>
+        </div>
+
+        <div class="editorial-table-container mt-4">
+            <h3 class="table-section-title">The Fundamental Tradeoff</h3>
+            <div class="table-responsive">
+                <table class="editorial-table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>KV-Cache (Transformer)</th>
+                            <th>Fixed-Size Recurrent State</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Memory per step</strong></td>
+                            <td>Grows: O(n)</td>
+                            <td class="highlight-cell">Constant: O(1)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Recall fidelity</strong></td>
+                            <td class="highlight-cell">Perfect — everything stored</td>
+                            <td>Degrades under load</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Inference cost</strong></td>
+                            <td>Grows with context</td>
+                            <td class="highlight-cell">Constant</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Failure mode</strong></td>
+                            <td>OOM / quadratic slowdown</td>
+                            <td>Interference — memories corrupt each other</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="disclaimer">
+                This is the core tradeoff this explainer teaches. BDH (<a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noopener">arXiv:2509.26507</a>) and BDH-CQ (<a href="https://arxiv.org/abs/2608.09888" target="_blank" rel="noopener">arXiv:2608.09888</a>) implement the fixed-size approach — Section 3 explains how.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Section 2: The Fix — Interactive Memory Lab ===== -->
+<section id="memory">
+    <div class="container">
+        <div class="section-num">02 The Mechanism</div>
+        <h2 class="section-title">Memory Lab: Outer-Product Associative Memory</h2>
+        <p class="section-subtitle">
+            Store key→value pairs in a d×d matrix using a Hebbian write rule. Then query it. Watch what happens as you add more.
+        </p>
+
+        <div class="equation-frame">
+            <div class="equation-text">
+                Write: $\mathbf{M} \leftarrow \mathbf{M} + \mathbf{v} \cdot \mathbf{k}^T$ &nbsp;&nbsp;|&nbsp;&nbsp; Read: $\hat{\mathbf{v}} = \mathbf{M} \cdot \mathbf{q}$
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-bar" id="memory-controls">
+            <div class="control-group">
+                <label for="dim-select" class="control-label">Dimension</label>
+                <select id="dim-select" aria-label="Memory dimension">
+                    <option value="4">d = 4</option>
+                    <option value="8" selected>d = 8</option>
+                    <option value="16">d = 16</option>
+                    <option value="32">d = 32</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <span class="control-label">Stored Slots</span>
+                <span class="control-value"><span id="stored-count">0</span> / <span id="dim-value">8</span></span>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-outline-primary btn-sm" id="add-pair-btn">+ Add Random Pair</button>
+                <button class="btn btn-outline-secondary btn-sm" id="add-5-btn">+ Add 5</button>
+                <button class="btn btn-outline-danger btn-sm" id="clear-btn">Clear</button>
+            </div>
+        </div>
+
+        <!-- Visualizations: Live Instrument Chassis -->
+        <div class="viz-grid" id="memory-viz-grid">
+            <!-- Memory Heatmap -->
+            <div class="instrument-panel">
+                <div class="instrument-header">
+                    <div class="instrument-title-wrap">
+                        <span class="live-indicator"></span>
+                        <span class="instrument-title">Memory Matrix M (live)</span>
+                    </div>
+                    <span class="instrument-badge">Hebbian State</span>
+                </div>
+                <div class="heatmap-container" id="heatmap-container">
+                    <canvas id="heatmap-canvas"></canvas>
+                </div>
+                <div class="capacity-gauge mt-2">
+                    <div class="gauge-label">Capacity Ratio ($n / d$)</div>
+                    <div class="gauge-value" id="capacity-display">0.00</div>
+                    <div class="gauge-track">
+                        <div id="capacity-bar" class="gauge-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Truth vs Recall -->
+            <div class="instrument-panel">
+                <div class="instrument-header">
+                    <div class="instrument-title-wrap">
+                        <span class="live-indicator"></span>
+                        <span class="instrument-title">Truth vs. Recall (live)</span>
+                    </div>
+                    <span class="instrument-badge">Cosine Similarity</span>
+                </div>
+                <div id="truth-table-container" class="truth-table-wrapper">
+                    <table class="truth-table" id="truth-table">
+                        <thead>
+                            <tr>
+                                <th>Demonstration Pair</th>
+                                <th>Recall Similarity</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="truth-table-body">
+                            <tr><td colspan="3" class="table-empty-msg">Click "Add Random Pair" to begin</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mean-recall-row mt-2">
+                    <span class="mean-recall-label">Mean recall fidelity:</span>
+                    <span id="mean-recall" class="font-mono text-green">—</span>
+                </div>
+            </div>
+        </div>
+
+        <p class="disclaimer">
+            <strong>Real substrate:</strong> Every write and read runs live in your browser via <code>js/memory-model.js</code>.
+            This is a toy model implementing the same outer-product mechanism described in the BDH paper (<a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noopener">arXiv:2509.26507</a>, Eq. 5–7).
+            It is not the actual BDH system.
+        </p>
+    </div>
+</section>
+
+<!-- ===== Section 3: BDH Module ===== -->
+<section id="bdh">
+    <div class="container">
+        <div class="section-num">03 BDH Connection</div>
+        <h2 class="section-title">How BDH and BDH-CQ Use This Mechanism</h2>
+        <p class="section-subtitle">
+            The outer-product write you just used <em>is</em> BDH's core memory mechanism.
+            Here's how it works in the actual architecture.
+        </p>
+
+        <div class="editorial-card mb-3">
+            <h3 class="card-headline">🧠 Learning Objective</h3>
+            <p>
+                After this section, you should be able to explain: <strong>BDH stores attention as synaptic memory that updates via Hebbian writes as the model reads. BDH-CQ extends this to absorb demonstration examples into recurrent state — enabling in-context learning without gradient updates.</strong>
+            </p>
+        </div>
+
+        <!-- BDH Architecture -->
+        <div class="editorial-card mb-3">
+            <h3 class="card-headline">BDH: Attention as Synaptic Memory</h3>
+            <p>
+                In a standard Transformer, attention is a lookup: query against stored keys to retrieve values.
+                In <strong>BDH</strong> (<a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noopener">arXiv:2509.26507</a>), this lookup is reformulated as <em>synaptic memory</em> — connections between
+                neuron-like units that strengthen when related concepts co-occur.
+            </p>
+            <div class="equation-frame" id="bdh-equation">
+                <div class="equation-text">
+                    $S(t) = S(t−1) + \eta \cdot v(t) \cdot k(t)^T$ &nbsp;&nbsp;(Hebbian synaptic update)
+                </div>
+            </div>
+            <p class="card-body-text">
+                This is exactly the outer-product write <code>M ← M + v · kᵀ</code> you used in Section 2.
+                <strong>S</strong> is the synapse matrix (fixed-size), <strong>v</strong> and <strong>k</strong> are the value and key at time <em>t</em>,
+                and <strong>η</strong> is a learning rate.
+            </p>
+            <p class="card-meta-text">
+                Key distinction: BDH is <em>not</em> an SSM in the Mamba sense. BDH models neuron-synapse interactions on a scale-free graph;
+                BDH-GPU is a separate GPU-friendly reformulation using ReLU/low-rank transformations with linear attention
+                (<a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noopener">arXiv:2509.26507</a>, Section 4).
+            </p>
+        </div>
+
+        <!-- BDH-CQ Step-Through -->
+        <div class="editorial-card mb-3">
+            <h3 class="card-headline">BDH-CQ: Learning from Demonstrations</h3>
+            <p class="mb-2 card-body-text">
+                <strong>BDH-CQ</strong> (<a href="https://arxiv.org/abs/2608.09888" target="_blank" rel="noopener">arXiv:2608.09888</a>) extends BDH to learn from a few demonstration examples at inference time.
+                Each demo pair is written into recurrent state. No gradient update. No chain-of-thought tokens. Click through to see how:
+            </p>
+
+            <div id="bdh-cq-demo">
+                <!-- Step 1 -->
+                <div class="bdh-step active" data-step="0">
+                    <div class="bdh-step-number">Step 1 of 4</div>
+                    <div class="bdh-step-title">See Demo Pair #1</div>
+                    <p class="card-body-text">The model receives an input→output example. "Fill the enclosed region."</p>
+                    <div class="arc-grid-container mt-2" id="demo-grids-0"></div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="bdh-step" data-step="1">
+                    <div class="bdh-step-number">Step 2 of 4</div>
+                    <div class="bdh-step-title">Write Demo #1 into Recurrent State</div>
+                    <p class="card-body-text">
+                        The demo is encoded and written into the fixed-size state matrix via Hebbian update.
+                        State accumulates <em>additively</em> — same outer-product write.
+                    </p>
+                    <div class="heatmap-container mt-2" style="max-width: 200px;">
+                        <canvas id="bdh-state-canvas-1"></canvas>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="bdh-step" data-step="2">
+                    <div class="bdh-step-number">Step 3 of 4</div>
+                    <div class="bdh-step-title">See Demo Pair #2 → Write Again</div>
+                    <p class="card-body-text">A second example reinforces the pattern. State grows richer.</p>
+                    <div class="arc-grid-container mt-2" id="demo-grids-1"></div>
+                    <div class="heatmap-container mt-2" style="max-width: 200px;">
+                        <canvas id="bdh-state-canvas-2"></canvas>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="bdh-step" data-step="3">
+                    <div class="bdh-step-number">Step 4 of 4</div>
+                    <div class="bdh-step-title">Test: Apply Learned Rule to New Input</div>
+                    <p class="card-body-text">
+                        The model reads from its recurrent state to predict the output for an unseen input.
+                        No gradient update was needed — the rule was absorbed into the state.
+                    </p>
+                    <div class="arc-grid-container mt-2" id="test-grids"></div>
+                </div>
+            </div>
+
+            <div class="btn-group mt-3">
+                <button class="btn btn-outline-secondary btn-sm" id="bdh-prev-btn" disabled>← Previous</button>
+                <button class="btn btn-outline-primary btn-sm" id="bdh-next-btn">Next Step →</button>
+            </div>
+
+            <p class="disclaimer">
+                <span class="evidence-tag evidence-tag--illustration">Illustration</span>
+                This walkthrough illustrates the published BDH-CQ mechanism (<a href="https://arxiv.org/abs/2608.09888" target="_blank" rel="noopener">arXiv:2608.09888</a>, Section 3).
+                It is not live BDH-CQ inference. Grid tasks are original examples, not from the ARC-AGI dataset.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Section 4: Breaking Point ===== -->
+<section id="interference">
+    <div class="container">
+        <div class="section-num">04 The Breaking Point</div>
+        <h2 class="section-title">When Memory Overflows: The Interference Cliff</h2>
+        <p class="section-subtitle">
+            Our claim says recall degrades "when the number of associations exceeds the memory's rank."
+            Here's the proof — try to break it yourself.
+        </p>
+
+        <!-- Live experiment: Instrument Panel -->
+        <div class="instrument-panel mb-3">
+            <div class="instrument-header">
+                <div class="instrument-title-wrap">
+                    <span class="live-indicator"></span>
+                    <span class="instrument-title">Live Experiment — Push Past Capacity</span>
+                </div>
+                <span class="instrument-badge">Interactive Calibration</span>
+            </div>
+            <p class="panel-caption mb-2">
+                Click rapidly to flood the memory. Watch the mean recall drop as stored pairs exceed the dimension.
+            </p>
+            <div class="controls-bar">
+                <div class="control-group">
+                    <label for="overload-dim-select" class="control-label">Dimension</label>
+                    <select id="overload-dim-select" aria-label="Overload experiment dimension">
+                        <option value="4">d = 4</option>
+                        <option value="8" selected>d = 8</option>
+                        <option value="16">d = 16</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <span class="control-label">Stored</span>
+                    <span class="control-value" id="overload-count">0</span>
+                </div>
+                <div class="control-group">
+                    <span class="control-label">Mean Recall</span>
+                    <span class="control-value text-green" id="overload-recall">—</span>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary btn-sm" id="overload-add-btn">+ Add Pair</button>
+                    <button class="btn btn-outline-secondary btn-sm" id="overload-flood-btn">Flood (+20)</button>
+                    <button class="btn btn-outline-danger btn-sm" id="overload-clear-btn">Reset</button>
+                </div>
+            </div>
+            <div class="chart-container" id="overload-chart-container">
+                <canvas id="overload-chart-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Precomputed sweep: Editorial Card -->
+        <div class="editorial-card mb-3">
+            <div class="instrument-header" style="background:transparent; padding:0 0 12px 0;">
+                <div class="instrument-title-wrap">
+                    <span class="evidence-tag evidence-tag--benchmark">Precomputed</span>
+                    <span class="instrument-title">Interference Sweep Across Dimensions</span>
+                </div>
+            </div>
+            <p class="card-body-text mb-2">
+                Below: mean cosine similarity vs. number of stored associations, for memory dimensions $d = 4, 8, 16, 32, 64$.
+                The vertical dashed line marks $n = d$ (the "capacity" point). Notice the consistent pattern:
+                recall is near-perfect below capacity and degrades predictably above it.
+            </p>
+            <div class="chart-container" id="sweep-chart-container">
+                <canvas id="sweep-chart-canvas"></canvas>
+            </div>
+            <div id="sweep-legend" class="mt-2 flex gap-2" style="flex-wrap: wrap; justify-content: center;"></div>
+            <p class="disclaimer">
+                Generated by <code>scripts/precompute_interference.py</code>. 20 trials per data point, random unit vectors.
+                <a href="data/interference_sweep.json" target="_blank">View raw data</a>.
+            </p>
+        </div>
+
+        <!-- Reflection -->
+        <div class="editorial-card reflection-box">
+            <h4 class="reflection-title">🪞 Check Your Understanding</h4>
+            <p class="card-body-text mb-2">
+                In your own words: why does recall degrade after the number of stored associations exceeds the memory dimension <em>d</em>?
+                What would happen if all keys were perfectly orthogonal?
+            </p>
+            <textarea id="reflection-input" placeholder="Type your explanation here…" aria-label="Reflection prompt"></textarea>
+            <p class="reflection-hint mt-1">
+                <strong>Hint:</strong> Think about what happens to $M \cdot q$ when $q$ is similar to multiple stored keys.
+                If keys are orthogonal, cross-terms vanish — but in $d$ dimensions, you can only have $d$ orthogonal vectors.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Section 5: Evidence & Limitations ===== -->
+<section id="evidence">
+    <div class="container">
+        <div class="section-num">05 Evidence &amp; Limitations</div>
+        <h2 class="section-title">What the Evidence Actually Shows</h2>
+        <p class="section-subtitle">
+            Every claim needs a label: benchmark, deployment, partnership, or independent reproduction. Here's what BDH-CQ's numbers actually are.
+        </p>
+
+        <!-- BDH-CQ Evidence Card -->
+        <div class="editorial-card mb-3">
+            <h3 class="card-headline">BDH-CQ on ARC-AGI-1</h3>
+            <div class="stat-metrics-row">
+                <div class="stat-metric-block">
+                    <div class="stat-number stat-blue">29.5%</div>
+                    <div class="stat-label">pass@2 on ARC-AGI-1 public eval</div>
+                </div>
+                <div class="stat-metric-block">
+                    <div class="stat-number stat-green">$0.0007</div>
+                    <div class="stat-label">estimated cost per task</div>
+                </div>
+                <div class="stat-metric-block">
+                    <div class="stat-number stat-amber">150M</div>
+                    <div class="stat-label">parameters</div>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <span class="evidence-tag evidence-tag--benchmark">Self-Reported Benchmark</span>
+                <span class="evidence-tag evidence-tag--partial-audit">Partially-Independent Audit</span>
+            </div>
+
+            <p class="card-body-text">
+                This result is reported in <a href="https://arxiv.org/abs/2608.09888" target="_blank" rel="noopener">arXiv:2608.09888</a>. The "independent audit" reproducing the 29.5% figure was conducted
+                by co-authors from partner institutions — not a fully arm's-length third party.
+                This is a <strong>self-reported benchmark result with a partially-independent audit</strong>,
+                not an external reproduction or a deployment.
+            </p>
+
+            <h4 class="mt-2 mb-1" style="font-size: 0.95rem; font-weight: 600; color: var(--color-ink-black);">Known Limitations (from the paper itself)</h4>
+            <ul class="limitations-list">
+                <li>A scaling-law claim is asserted without multi-scale (50M/150M/500M) ablation experiments.</li>
+                <li>A language-modeling capability claim is asserted without LM experiments.</li>
+                <li>Disclosed composition failure: <strong>0/72 on a specific color-swap task</strong>.</li>
+                <li>No publicly available checkpoint for independent reproduction.</li>
+            </ul>
+            <p class="disclaimer">
+                Source: <a href="https://arxiv.org/abs/2608.09888" target="_blank" rel="noopener">arXiv:2608.09888</a> (BDH-CQ paper, limitations section) and the <a href="https://huggingface.co/papers/2608.09888" target="_blank" rel="noopener">Hugging Face paper page public review thread</a>.
+            </p>
+        </div>
+
+        <!-- Comparison Table: Editorial Table -->
+        <div class="editorial-table-container mb-3">
+            <h3 class="table-section-title">Architecture Comparison</h3>
+            <p class="card-body-text mb-2">
+                How does fixed-size recurrent memory compare across recent architectures?
+            </p>
+            <div class="table-responsive">
+                <table class="editorial-table">
+                    <thead>
+                        <tr>
+                            <th>System</th>
+                            <th>Memory Type</th>
+                            <th>Growth</th>
+                            <th>Write Rule</th>
+                            <th>Key Claim</th>
+                            <th>Evidence Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Transformer</strong></td>
+                            <td>KV-Cache</td>
+                            <td>O(n)</td>
+                            <td>Append</td>
+                            <td>Perfect recall, any length</td>
+                            <td><span class="evidence-tag evidence-tag--deployment" style="font-size:0.65rem">Deployed</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Infini-attention</strong></td>
+                            <td>Fixed + local attn</td>
+                            <td>O(1) + O(w)</td>
+                            <td>Linear attn update</td>
+                            <td>1M-token passkey retrieval</td>
+                            <td><span class="evidence-tag evidence-tag--benchmark" style="font-size:0.65rem">Benchmark</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Titans</strong></td>
+                            <td>Neural memory module</td>
+                            <td>O(1)</td>
+                            <td>Surprise-gated</td>
+                            <td>2M+ token, test-time learning</td>
+                            <td><span class="evidence-tag evidence-tag--benchmark" style="font-size:0.65rem">Benchmark</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>BDH</strong></td>
+                            <td>Synaptic matrix</td>
+                            <td>O(1)</td>
+                            <td>Hebbian outer-product</td>
+                            <td>~5% sparse, monosemantic</td>
+                            <td><span class="evidence-tag evidence-tag--benchmark" style="font-size:0.65rem">Benchmark</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>BDH-CQ</strong></td>
+                            <td>Recurrent latent state</td>
+                            <td>O(1)</td>
+                            <td>Demo → state write</td>
+                            <td>29.5% ARC-AGI, $0.0007/task</td>
+                            <td><span class="evidence-tag evidence-tag--partial-audit" style="font-size:0.65rem">Partial Audit</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="disclaimer">
+                Sources: Transformer (widespread deployment); Infini-attention (<a href="https://arxiv.org/abs/2404.07143" target="_blank" rel="noopener">arXiv:2404.07143</a>);
+                Titans (<a href="https://arxiv.org/abs/2501.00663" target="_blank" rel="noopener">arXiv:2501.00663</a>); BDH (<a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noopener">arXiv:2509.26507</a>); BDH-CQ (<a href="https://arxiv.org/abs/2608.09888" target="_blank" rel="noopener">arXiv:2608.09888</a>).
+            </p>
+        </div>
+
+        <!-- Open question -->
+        <div class="editorial-card">
+            <h3 class="card-headline">🔬 The Open Question</h3>
+            <p class="card-body-text">
+                Can fixed-size recurrent memory <em>match</em> KV-cache recall fidelity on long-context tasks
+                without resorting to hybrid approaches? The interference cliff you saw in Section 4 is the fundamental barrier.
+                Gating, normalization, and selective writing can push it back — but they don't eliminate it.
+            </p>
+            <p class="card-meta-text">
+                This remains an active area of research. See: Gated DeltaNet (<a href="https://arxiv.org/abs/2412.06464" target="_blank" rel="noopener">arXiv:2412.06464</a>), Variational Linear Attention (<a href="https://arxiv.org/abs/2412.09871" target="_blank" rel="noopener">arXiv:2412.09871</a>).
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Footer (Colophon Aesthetic) ===== -->
+<footer>
+    <div class="container footer-content">
+        <p class="footer-title">
+            <strong>DataForge 2026 × Pathway Track</strong> — In-Context Learning with Recurrent Memory
+        </p>
+        <p class="footer-links mt-1">
+            Built with AI assistance. All content team-reviewed. ·
+            <a href="https://github.com/LuciferK47/recurrent-memory-explainer" target="_blank" rel="noopener">View Source (Team Repo)</a> ·
+            <a href="README.md" target="_blank">README</a> ·
+            <a href="docs/citations.md" target="_blank">Citations</a> ·
+            <a href="concept_summary.pdf" target="_blank">Concept Summary (PDF)</a> ·
+            <a href="https://github.com/pathwaycom/bdh" target="_blank" rel="noopener">Pathway's Reference Implementation (BDH)</a>
+            <span style="font-size: 0.8em; opacity: 0.8;">(official toy implementation, not this project's code)</span>
+        </p>
+        <p class="footer-sources mt-1">
+            Primary sources: <a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noopener">arXiv:2509.26507</a> (BDH) · <a href="https://arxiv.org/abs/2608.09888" target="_blank" rel="noopener">arXiv:2608.09888</a> (BDH-CQ) · <a href="https://arxiv.org/abs/2404.07143" target="_blank" rel="noopener">arXiv:2404.07143</a> (Infini-attention) · <a href="https://arxiv.org/abs/2501.00663" target="_blank" rel="noopener">arXiv:2501.00663</a> (Titans)
+        </p>
+    </div>
+</footer>
+
+<!-- ===== Scripts ===== -->
+<script type="module" src="js/app.js"></script>
+
+</body>
+</html>

@@ -2,9 +2,10 @@ import React from 'react';
 
 interface FooterProps {
   onOpenCitations?: () => void;
+  onOpenReadme?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenCitations }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenCitations, onOpenReadme }) => {
   const baseUrl = import.meta.env.BASE_URL || './';
 
   return (
@@ -24,10 +25,14 @@ export const Footer: React.FC<FooterProps> = ({ onOpenCitations }) => {
           </a>
           <span>&middot;</span>
           <a
-            href={`${baseUrl}README.md`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-ink hover:text-memory underline"
+            href="#readme"
+            onClick={(e) => {
+              if (onOpenReadme) {
+                e.preventDefault();
+                onOpenReadme();
+              }
+            }}
+            className="text-ink hover:text-memory underline font-medium"
           >
             README
           </a>

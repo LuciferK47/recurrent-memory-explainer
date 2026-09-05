@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>README — Recurrent Memory Explainer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+    <style>
+        :root {
+            --bg-canvas: #f8f6f0;
+            --bg-surface: #ffffff;
+            --text-ink: #1a1917;
+            --text-muted: #6b6964;
+            --border: #e2ded4;
+            --accent-memory: #2563eb;
+            --font-display: 'Fraunces', serif;
+            --font-body: 'Inter', -apple-system, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, monospace;
+        }
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-ink);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            margin: 0;
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--accent-memory);
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+            padding: 0.35rem 0.75rem;
+            background: rgba(37, 99, 235, 0.08);
+            border-radius: 6px;
+        }
+        .nav-back:hover {
+            background: rgba(37, 99, 235, 0.15);
+        }
+        h1 {
+            font-family: var(--font-display);
+            font-size: 2.25rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+        h2 {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        hr {
+            border: 0;
+            border-top: 1px solid var(--border);
+            margin: 2rem 0;
+        }
+        a {
+            color: var(--accent-memory);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        blockquote {
+            border-left: 3px solid var(--accent-memory);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-muted);
+            font-style: italic;
+            background: rgba(37, 99, 235, 0.04);
+            border-radius: 0 6px 6px 0;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin: 1rem 0;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            background: #f1ede4;
+            padding: 0.15rem 0.35rem;
+            border-radius: 4px;
+        }
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+        }
+        th {
+            background: #f1ede4;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background: rgba(0, 0, 0, 0.02);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="./" class="nav-back">← Back to Interactive Explainer</a>
+        <h1>Recurrent Memory Explainer: How Fixed-Size State Learns and Forgets</h1>
+
+<blockquote><strong>DataForge 2026 &times; Pathway Track Submission</strong></blockquote>
+<blockquote><em>Track: Explain the Frontier &mdash; In-Context Learning with Recurrent Memory</em></blockquote>
+
+<p><a href="https://github.com/LuciferK47/recurrent-memory-explainer" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/GitHub-LuciferK47%2Frecurrent--memory--explainer-blue?logo=github" alt="Team Repository" style="vertical-align:middle; margin-right:4px; margin-bottom:4px;"/></a></p>
+<p><a href="https://luciferk47.github.io/recurrent-memory-explainer/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/Artifact-Live_Web_App-green" alt="Live Explainer" style="vertical-align:middle; margin-right:4px; margin-bottom:4px;"/></a></p>
+<p><a href="concept_summary.pdf" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/PDF-One--Page_Concept_Summary-red" alt="Concept Summary PDF" style="vertical-align:middle; margin-right:4px; margin-bottom:4px;"/></a></p>
+<p><a href="LICENSE" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" style="vertical-align:middle; margin-right:4px; margin-bottom:4px;"/></a></p>
+
+<hr/>
+
+<h2>1. The Central Locked Claim</h2>
+
+<blockquote><em>"A fixed-size recurrent memory can absorb key–value associations from demonstrations and recall them accurately — until the number of associations exceeds the memory's rank, at which point recall degrades through interference in a predictable, measurable way."</em></blockquote>
+
+<p>Standard Transformers rely on an unbounded Key–Value (KV) cache scaling linearly ($O(n)$ footprint per sequence). In contrast, fixed-size recurrent models (such as Pathway's <strong>Dragon Hatchling / BDH</strong> and <strong>BDH-CQ</strong>) compress associations into a constant-size $d \times d$ matrix, achieving $O(1)$ memory complexity per sequence during inference. This interactive explainer demonstrates the Hebbian outer-product mechanism that enables this test-time learning, and pinpoints exactly where and why retrieval collapses due to cross-talk interference.</p>
+
+<hr/>
+
+<h2>2. Pedagogical Framework</h2>
+
+<ul><li><strong>Target Audience:</strong> CS/ML students, researchers, and junior practitioners who understand self-attention but have not built or analyzed recurrent associative memory systems.</li></ul>
+<ul><li><strong>Prerequisites:</strong> Basic linear algebra (vectors, inner/outer products, matrix rank, orthogonality) and high-level knowledge of Transformers.</li></ul>
+<ul><li><strong>Core Learning Objectives:</strong></li></ul>
+<ol><li><strong>Explain the algebraic write rule:</strong> Understand how rank-1 Hebbian outer products ($M \leftarrow M + v k^T$) superimpose key–value pairs into a bounded state matrix.</li></ol>
+<ol><li><strong>Predict the capacity cliff:</strong> Calculate when associative recall degrades given matrix dimension $d$ and number of stored items $N$ (governed by the orthogonality condition).</li></ol>
+<ol><li><strong>Demystify BDH & BDH-CQ:</strong> Describe how Pathway's architecture absorbs in-context demonstrations directly into synaptic memory without gradient updates or token-level chain-of-thought scratchpads.</li></ol>
+
+<hr/>
+
+<h2>3. Architecture of the Artifact</h2>
+
+<blockquote><strong>Authoritative Submission Artifact</strong>: The primary deliverable for this submission is the production <strong>React 19 + TypeScript + Vite + Tailwind</strong> application located in <code>react-app/</code>.</blockquote>
+<blockquote><em>Note on Vanilla Prototype</em>: A standalone vanilla HTML/JS/CSS implementation in the root directory is retained strictly as a legacy reference prototype for low-dependency inspection, but the React build is the definitive submission deliverable.</blockquote>
+
+<pre><code>Pathway_IITKGP/
+<p>├── react-app/                     # AUTHORITATIVE SUBMISSION ARTIFACT (React 19 + Vite)</p>
+<p>│   ├── src/</p>
+<p>│   │   ├── lib/memory-math.ts     # Pure mathematical substrate (zero DOM dependencies)</p>
+<p>│   │   ├── components/</p>
+<p>│   │   │   ├── Navbar.tsx         # Frosted glass floating navigation pill</p>
+<p>│   │   │   ├── Hero.tsx           # Signature Hebbian synaptic junction visualization</p>
+<p>│   │   │   ├── ProblemComparison.tsx  # Interactive O(n) KV-Cache vs O(1) State comparison</p>
+<p>│   │   │   ├── MemoryLab.tsx      # Live associative matrix heatmap &amp; cosine similarity instrument</p>
+<p>│   │   │   ├── BDHModule.tsx      # Step-by-step visual ARC-style grid demonstration walkthrough</p>
+<p>│   │   │   ├── BreakingPoint.tsx  # Live stress testing &amp; precomputed multi-dim capacity sweep</p>
+<p>│   │   │   ├── EvidencePanel.tsx  # Rigorous claims, independent audits, &amp; comparison matrix</p>
+<p>│   │   │   ├── OpenQuestion.tsx   # Open research frontiers in recurrent memory</p>
+<p>│   │   │   ├── CitationsModal.tsx # In-app rendered markdown &amp; KaTeX citations viewer</p>
+<p>│   │   │   └── Footer.tsx         # Five unambiguous destination links &amp; citations</p>
+<p>│   │   └── index.css              # Custom Departure Mono, Fraunces, and Inter typography tokens</p>
+<p>├── index.html                     # Legacy reference prototype (static vanilla HTML)</p>
+<p>├── js/app.js                      # Legacy prototype script</p>
+<p>├── css/style.css                  # Legacy prototype stylesheet</p>
+<p>├── docs/</p>
+<p>│   ├── citations.md               # Primary literature catalog (Group A &amp; Group B)</p>
+<p>│   ├── citations.html             # Pre-rendered standalone citations viewer with KaTeX</p>
+<p>│   ├── concept_summary.md         # 1-page technical concept summary</p>
+<p>│   ├── concept_summary.html       # Print stylesheet for PDF rendering</p>
+<p>│   └── fact_sheet.md              # Immutable factual source of truth</p>
+<p>└── concept_summary.pdf            # Compiled 1-page PDF briefing</p>
+<p></code></pre></p>
+
+<h3>Component Evidence Ledger (Live vs. Precomputed vs. Synthetic)</h3>
+
+<div class="table-container"><table>
+<thead><tr><th>Module / Component</th><th>Mechanism</th><th>Category</th><th>Technical Description</th></tr></thead><tbody>
+<tr><td><strong>Memory Lab (02)</strong></td><td>Matrix Heatmap & Cosine Readout</td><td><strong>Live Substrate</strong></td><td>100% computed live in-browser via pure math module (<code>memory-math.ts</code>). Exact outer products and dot products.</td></tr>
+<tr><td><strong>Breaking Point (04) Live Flood</strong></td><td>Stress Test Chart</td><td><strong>Live Substrate</strong></td><td>Real-time simulation plotting degradation curve as random vectors flood the live state.</td></tr>
+<tr><td><strong>Interference Sweep (04)</strong></td><td>Multi-D Capacity Curves</td><td><strong>Precomputed</strong></td><td>Monte Carlo sweeps across $d \in \{4, 8, 16, 32, 64\}$ generated by <code>scripts/precompute_interference.py</code> (20 trials/pt).</td></tr>
+<tr><td><strong>BDH-CQ Walkthrough (03)</strong></td><td>ARC Grid Demonstrations</td><td><strong>Synthetic / Didactic</strong></td><td>Handcrafted, original visual grid tasks illustrating demonstration absorption without gradient updates.</td></tr>
+<tr><td><strong>Hero Diagram</strong></td><td>Synaptic Junction Animation</td><td><strong>Animated Model</strong></td><td>Live reactive vector field demonstrating outer-product alignment between keys and values.</td></tr>
+<tr><td><strong>29.5% ARC-AGI-1 Metric</strong></td><td>Benchmark Badge</td><td><strong>Self-Reported</strong></td><td>Reported by Kosowski et al. (arXiv:2608.09888); self-reported benchmark with a partially-independent audit.</td></tr>
+</tbody></table></div>
+
+<hr/>
+
+<h2>4. Local Setup & Reproduction Instructions</h2>
+
+<h3>Running the React Application (Recommended / Authoritative)</h3>
+
+<pre><code># Navigate to the react-app directory
+<p>cd react-app</p>
+
+<h1>Dependencies are already installed; to reinstall or update:</h1>
+<p>npm install</p>
+
+<h1>Start the Vite development server</h1>
+<p>npm run dev</p>
+<h1>-&gt; Opens on http://localhost:5173/</h1>
+
+<h1>Build for production</h1>
+<p>npm run build</p>
+<h1>-&gt; Compiles static bundle to react-app/dist/</h1>
+<p></code></pre></p>
+
+<h3>Running the Legacy Prototype (Static Vanilla HTML/JS)</h3>
+
+<pre><code># From the root repository directory
+<p>python3 -m http.server 8080</p>
+<h1>-&gt; Visit http://localhost:8080/ in any standard browser</h1>
+<p></code></pre></p>
+
+<h3>Precomputing Sweeps (Optional Python Reproduction)</h3>
+
+<pre><code># Generate the multi-dimensional capacity degradation data
+<p>python3 scripts/precompute_interference.py</p>
+
+<h1>Generate the toy ARC-style demonstration states</h1>
+<p>python3 scripts/precompute_bdh_demo.py</p>
+<p></code></pre></p>
+
+<hr/>
+
+<p><a name="citations"></a></p>
+<h2>5. Citations & References</h2>
+
+<p>Full annotations and paper summaries are available in <a href="docs/citations.md" target="_blank" rel="noopener noreferrer">docs/citations.md</a> and online at <a href="https://luciferk47.github.io/recurrent-memory-explainer/docs/citations.html" target="_blank" rel="noopener noreferrer">docs/citations.html</a>.</p>
+
+<h3>Group A: General Recurrent Memory & In-Context Learning (2022–2026)</h3>
+<ul><li><strong>Infini-attention:</strong> Munkhdalai, Faruqui, & Gopal, <em>Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention</em>, <a href="https://arxiv.org/abs/2404.07143" target="_blank" rel="noopener noreferrer">arXiv:2404.07143</a>, 2024.</li></ul>
+<ul><li><strong>Titans:</strong> Behrouz, Zhong, & Mirrokni, <em>Titans: Learning to Memorize at Test Time</em>, <a href="https://arxiv.org/abs/2501.00663" target="_blank" rel="noopener noreferrer">arXiv:2501.00663</a>, 2025.</li></ul>
+<ul><li><strong>Gated DeltaNet:</strong> Yang, Kautz, & Hatamizadeh, <em>Gated Delta Networks: Improving Mamba2 with Delta Rule</em>, <a href="https://arxiv.org/abs/2412.06464" target="_blank" rel="noopener noreferrer">arXiv:2412.06464</a>, 2024 (ICLR 2025).</li></ul>
+<ul><li><strong>Variational Linear Attention:</strong> Pandey & Singh, <em>Variational Linear Attention: Stable Associative Memory for Long-Context Transformers</em>, <a href="https://arxiv.org/abs/2605.11196" target="_blank" rel="noopener noreferrer">arXiv:2605.11196</a>, 2026.</li></ul>
+
+<h3>Group B: BDH & BDH-CQ Primary Sources</h3>
+<ul><li><strong>The Dragon Hatchling (BDH):</strong> Kosowski et al., <em>The Dragon Hatchling: The Missing Link between the Transformer and Models of the Brain</em>, <a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noopener noreferrer">arXiv:2509.26507</a>, Sept 2025.</li></ul>
+<ul><li><strong>BDH-CQ:</strong> Engdahl et al., <em>BDH-CQ: In-Context Learning with Recurrent Latent Reasoning</em>, <a href="https://arxiv.org/abs/2608.09888" target="_blank" rel="noopener noreferrer">arXiv:2608.09888</a>, 2026. Discussion on <a href="https://huggingface.co/papers/2608.09888" target="_blank" rel="noopener noreferrer">Hugging Face Papers</a>.</li></ul>
+<ul><li><strong>Pathway BDH Reference Implementation:</strong> <a href="https://github.com/pathwaycom/bdh" target="_blank" rel="noopener noreferrer">https://github.com/pathwaycom/bdh</a> <em>(Official Pathway toy implementation, not this project's code)</em>.</li></ul>
+<ul><li><strong>Pathway Research Articles:</strong> <a href="https://pathway.com/research/bdh-explainer" target="_blank" rel="noopener noreferrer">BDH Explainer</a> &middot; <a href="https://pathway.com/research/introducing-bdh-cq" target="_blank" rel="noopener noreferrer">Introducing BDH-CQ</a>.</li></ul>
+
+<hr/>
+
+<h2>6. Disclosures, AI Assistance, & License Records</h2>
+
+<h3>AI Disclosure</h3>
+<ul><li><strong>Code Assistance:</strong> Claude 3.5 Sonnet and Google Gemini via Antigravity IDE for scaffolding, interactive UI components, and test-suite composition.</li></ul>
+<ul><li><strong>Simulations:</strong> Monte Carlo sweep scripts written and reviewed by the team.</li></ul>
+<ul><li><strong>Prose & Copy:</strong> Drafted with assistance, strictly constrained to <code>docs/fact_sheet.md</code> source of truth.</li></ul>
+
+<h3>Licenses & Asset Attributions</h3>
+<ul><li><strong>Source Code:</strong> <a href="LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a> &copy; 2026 Team DataForge &times; Pathway Track.</li></ul>
+<ul><li><strong>Typography:</strong></li></ul>
+<ul><li><em>Departure Mono</em>: SIL Open Font License 1.1 (Helena Zhang)</li></ul>
+<ul><li><em>Inter</em>: SIL Open Font License 1.1 (Rasmus Andersson)</li></ul>
+<ul><li><em>Fraunces</em>: SIL Open Font License 1.1 (Undercase Type)</li></ul>
+<ul><li><strong>Math Engine:</strong> KaTeX: MIT License (Khan Academy).</li></ul>
+
+    </div>
+</body>
+</html>

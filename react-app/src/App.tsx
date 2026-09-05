@@ -11,6 +11,7 @@ import { EvidencePanel } from './components/EvidencePanel';
 import { OpenQuestion } from './components/OpenQuestion';
 import { Footer } from './components/Footer';
 import { CitationsModal } from './components/CitationsModal';
+import { ReadmeModal } from './components/ReadmeModal';
 import {
   Matrix,
   createZeroMatrix,
@@ -42,11 +43,18 @@ export const App: React.FC = () => {
   const [showCitations, setShowCitations] = useState<boolean>(() => {
     return typeof window !== 'undefined' && window.location.hash === '#citations';
   });
+  const [showReadme, setShowReadme] = useState<boolean>(() => {
+    return typeof window !== 'undefined' && window.location.hash === '#readme';
+  });
 
   useEffect(() => {
     const handleHashChange = () => {
       if (window.location.hash === '#citations') {
         setShowCitations(true);
+        setShowReadme(false);
+      } else if (window.location.hash === '#readme') {
+        setShowReadme(true);
+        setShowCitations(false);
       }
     };
     window.addEventListener('hashchange', handleHashChange);
@@ -172,12 +180,24 @@ export const App: React.FC = () => {
         <OpenQuestion />
       </main>
 
-      <Footer onOpenCitations={() => setShowCitations(true)} />
+      <Footer
+        onOpenCitations={() => setShowCitations(true)}
+        onOpenReadme={() => setShowReadme(true)}
+      />
       <CitationsModal
         isOpen={showCitations}
         onClose={() => {
           setShowCitations(false);
           if (window.location.hash === '#citations') {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        }}
+      />
+      <ReadmeModal
+        isOpen={showReadme}
+        onClose={() => {
+          setShowReadme(false);
+          if (window.location.hash === '#readme') {
             history.replaceState(null, '', window.location.pathname + window.location.search);
           }
         }}

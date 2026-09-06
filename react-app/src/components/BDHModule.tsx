@@ -124,18 +124,18 @@ export const BDHModule: React.FC = () => {
         </p>
 
         {/* Learning Objective Card */}
-        <div className="bg-surface border border-border rounded-lg p-6 mb-6 shadow-sm">
+        <div className="bg-surface/80 border border-border/80 border-l-4 border-l-truth rounded-xl p-6 mb-6 shadow-sm backdrop-blur-sm">
           <h3 className="text-lg font-display text-ink mb-2">Learning Objective</h3>
-          <p className="text-sm text-ink leading-relaxed m-0">
+          <p className="text-sm text-ink-muted leading-relaxed m-0">
             After this section, you should be able to explain:{' '}
-            <strong>
+            <strong className="text-ink">
               BDH stores attention as synaptic memory that updates via Hebbian writes as the model reads. BDH-CQ extends this to absorb demonstration examples into recurrent state — enabling in-context learning without gradient updates.
             </strong>
           </p>
         </div>
 
         {/* BDH Architecture Overview Card */}
-        <div className="bg-surface border border-border rounded-lg p-6 mb-8 shadow-sm">
+        <div className="bg-surface/90 border border-border/80 rounded-xl p-6 mb-8 shadow-md backdrop-blur-sm">
           <h3 className="text-xl font-display text-ink mb-3">BDH: Attention as Synaptic Memory</h3>
           <p className="text-sm text-ink leading-relaxed mb-4">
             In a standard Transformer, attention is a lookup: query against stored keys to retrieve values. In{' '}
@@ -144,31 +144,31 @@ export const BDHModule: React.FC = () => {
               href="https://arxiv.org/abs/2509.26507"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-ink hover:text-memory underline"
+              className="text-memory hover:underline"
             >
               arXiv:2509.26507
             </a>
             ), this lookup is reformulated as <em>synaptic memory</em> — connections between neuron-like units that strengthen when related concepts co-occur.
           </p>
 
-          <div className="bg-linen border border-border rounded-lg p-4 mb-4 text-center">
-            <span className="font-mono text-ink text-sm sm:text-base font-medium">
-              S(t) = S(t−1) + η · v(t) · k(t)<sup>T</sup> &nbsp;&nbsp;(Hebbian synaptic update)
+          <div className="bg-surface-elevated/80 border border-border/80 rounded-lg p-4 mb-4 text-center">
+            <span className="font-mono text-memory text-sm sm:text-base font-medium">
+              S(t) = S(t−1) + η · v(t) · k(t)<sup>T</sup> &nbsp;&nbsp;<span className="text-ink-muted text-xs font-sans">(Hebbian synaptic update)</span>
             </span>
           </div>
 
           <p className="text-sm text-ink leading-relaxed mb-3">
-            This is exactly the outer-product write <code>M &larr; M + v &middot; k<sup>T</sup></code> you used in Section 2.{' '}
+            This is exactly the outer-product write <code className="text-memory bg-surface-elevated px-1.5 py-0.5 rounded text-xs">M &larr; M + v &middot; k<sup>T</sup></code> you used in Section 2.{' '}
             <strong>S</strong> is the synapse matrix (fixed-size), <strong>v</strong> and <strong>k</strong> are the value and key at time <em>t</em>, and <strong>η</strong> is a learning rate.
           </p>
 
-          <p className="text-xs text-ink-muted leading-relaxed m-0 border-t border-border pt-3">
+          <p className="text-xs text-ink-muted leading-relaxed m-0 border-t border-border/70 pt-3">
             Key distinction: BDH is <em>not</em> an SSM in the Mamba sense. BDH models neuron-synapse interactions on a scale-free graph; BDH-GPU is a separate GPU-friendly reformulation using ReLU/low-rank transformations with linear attention (
             <a
               href="https://arxiv.org/abs/2509.26507"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-ink hover:text-memory underline"
+              className="text-memory hover:underline"
             >
               arXiv:2509.26507
             </a>
@@ -177,10 +177,10 @@ export const BDHModule: React.FC = () => {
         </div>
 
         {/* BDH-CQ Walkthrough Step-Through Card */}
-        <div className="bg-surface border border-border rounded-lg p-6 mb-4 shadow-sm">
+        <div className="bg-surface/90 border border-border/80 rounded-xl p-6 mb-4 shadow-md backdrop-blur-sm">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <h3 className="text-xl font-display text-ink m-0">BDH-CQ: Learning from Demonstrations</h3>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded border border-border bg-linen text-ink">
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded border border-border/80 bg-surface-elevated text-ink-muted">
               illustration
             </span>
           </div>
@@ -191,7 +191,7 @@ export const BDHModule: React.FC = () => {
               href="https://arxiv.org/abs/2608.09888"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-ink hover:text-memory underline"
+              className="text-memory hover:underline"
             >
               arXiv:2608.09888
             </a>
@@ -199,15 +199,15 @@ export const BDHModule: React.FC = () => {
           </p>
 
           {/* Stepper Navigation */}
-          <div className="flex items-center gap-2 mb-6 border-b border-border pb-3">
+          <div className="flex items-center gap-2 mb-6 border-b border-border/70 pb-3">
             {DEMO_STEPS.map((s, idx) => (
               <button
                 key={s.step}
                 onClick={() => setCurrentStep(idx)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   currentStep === idx
-                    ? 'bg-memory text-surface font-semibold'
-                    : 'bg-linen text-ink-muted hover:text-ink'
+                    ? 'bg-memory/15 text-memory border border-memory/60 font-semibold shadow-[0_0_12px_rgba(0,210,255,0.2)]'
+                    : 'bg-surface border border-border/80 text-ink-muted hover:text-ink hover:bg-surface-elevated'
                 }`}
               >
                 Step {s.step}
@@ -216,16 +216,16 @@ export const BDHModule: React.FC = () => {
           </div>
 
           {/* Current Step Content */}
-          <div className="bg-linen/50 border border-border rounded-lg p-5 mb-6">
+          <div className="bg-surface-elevated/40 border border-border/80 rounded-xl p-5 mb-6">
             <div className="text-xs font-mono font-semibold text-memory uppercase mb-1">
               Step {stepData.step} of 4
             </div>
             <h4 className="text-lg font-display text-ink mb-2">{stepData.title}</h4>
-            <p className="text-sm text-ink mb-4">{stepData.description}</p>
+            <p className="text-sm text-ink-muted mb-4">{stepData.description}</p>
 
             {/* Visual demo grids */}
             {stepData.inputGrid && stepData.outputGrid && (
-              <div className="flex flex-wrap items-center justify-center gap-6 my-4 p-4 bg-surface rounded border border-border">
+              <div className="flex flex-wrap items-center justify-center gap-6 my-4 p-4 bg-surface rounded-lg border border-border/80">
                 <div className="text-center">
                   <div className="text-[11px] font-mono text-ink-muted uppercase mb-1">Input Grid</div>
                   {renderMiniGrid(stepData.inputGrid)}
@@ -239,17 +239,17 @@ export const BDHModule: React.FC = () => {
             )}
 
             {stepData.hasMatrix && (
-              <div className="my-4 p-4 bg-surface rounded border border-border flex flex-col items-center">
+              <div className="my-4 p-4 bg-surface rounded-lg border border-border/80 flex flex-col items-center">
                 <div className="text-xs font-mono text-memory font-medium mb-2">
                   {stepData.matrixHighlight}
                 </div>
-                <div className="w-32 h-32 bg-linen border border-border rounded grid grid-cols-4 grid-rows-4 gap-1 p-2">
+                <div className="w-32 h-32 bg-canvas border border-border/80 rounded-lg grid grid-cols-4 grid-rows-4 gap-1 p-2 shadow-inner">
                   {Array.from({ length: 16 }).map((_, i) => (
                     <div
                       key={i}
-                      className="rounded-sm"
+                      className="rounded-sm transition-colors"
                       style={{
-                        backgroundColor: i % 3 === 0 ? '#1d6fa5' : i % 5 === 0 ? '#c04928' : '#f0f2ee',
+                        backgroundColor: i % 3 === 0 ? '#00D2FF' : i % 5 === 0 ? '#FF4D4D' : '#181D29',
                         opacity: 0.85,
                       }}
                     />
@@ -259,7 +259,7 @@ export const BDHModule: React.FC = () => {
             )}
 
             {stepData.testInput && stepData.testPredicted && (
-              <div className="flex flex-wrap items-center justify-center gap-6 my-4 p-4 bg-surface rounded border border-border">
+              <div className="flex flex-wrap items-center justify-center gap-6 my-4 p-4 bg-surface rounded-lg border border-border/80">
                 <div className="text-center">
                   <div className="text-[11px] font-mono text-ink-muted uppercase mb-1">Test Input</div>
                   {renderMiniGrid(stepData.testInput)}
@@ -279,26 +279,26 @@ export const BDHModule: React.FC = () => {
             <button
               onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
               disabled={currentStep === 0}
-              className="border border-border text-ink hover:bg-linen disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-xs font-medium transition-colors"
+              className="border border-border/80 text-ink hover:bg-surface-elevated disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-xs font-medium transition-all"
             >
               &larr; Previous
             </button>
             <button
               onClick={() => setCurrentStep(prev => Math.min(DEMO_STEPS.length - 1, prev + 1))}
               disabled={currentStep === DEMO_STEPS.length - 1}
-              className="border border-memory text-memory hover:bg-memory/10 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-xs font-medium transition-colors"
+              className="bg-memory/15 border border-memory/60 text-memory hover:bg-memory/25 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-xs font-medium transition-all shadow-[0_0_10px_rgba(0,210,255,0.15)]"
             >
               Next Step &rarr;
             </button>
           </div>
 
-          <p className="text-xs text-ink-muted italic border-t border-border pt-3 mt-6 mb-0">
+          <p className="text-xs text-ink-muted italic border-t border-border/70 pt-3 mt-6 mb-0">
             This walkthrough illustrates the published BDH-CQ mechanism (
             <a
               href="https://arxiv.org/abs/2608.09888"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-ink hover:text-memory underline not-italic"
+              className="text-memory hover:underline not-italic"
             >
               arXiv:2608.09888
             </a>

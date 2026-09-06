@@ -159,3 +159,29 @@ export function runInterferenceTrial(
   const meanRecall = nPairs > 0 ? sum / nPairs : 1.0;
   return { meanRecall, recalls };
 }
+
+/**
+ * Compute vector dot product: a^T * b
+ */
+export function vectorDot(a: Vector, b: Vector): number {
+  let sum = 0;
+  const len = Math.min(a.length, b.length);
+  for (let i = 0; i < len; i++) {
+    sum += a[i] * b[i];
+  }
+  return sum;
+}
+
+/**
+ * Generate a deterministic unit vector from a text string.
+ */
+export function vectorFromText(text: string, dim: number): Vector {
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    hash = (hash << 5) - hash + text.charCodeAt(i);
+    hash |= 0;
+  }
+  const rng = createRng(Math.abs(hash) + 1337);
+  return randomUnitVector(dim, rng);
+}
+

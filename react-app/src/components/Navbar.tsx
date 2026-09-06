@@ -54,11 +54,11 @@ export const Navbar: React.FC = () => {
               {isActive && (
                 <motion.div
                   layoutId="activeNavHighlight"
-                  className="absolute inset-0 bg-surface rounded-full shadow-sm border border-border"
+                  className="absolute inset-0 bg-surface-elevated rounded-full shadow-[0_0_15px_rgba(0,210,255,0.15)] border border-memory/30"
                   transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                 />
               )}
-              <span className={`relative z-10 ${isActive ? 'text-ink font-semibold' : 'text-ink-muted'}`}>
+              <span className={`relative z-10 ${isActive ? 'text-white font-semibold text-shadow-sm' : 'text-ink-muted hover:text-ink'}`}>
                 {item.label}
               </span>
             </a>

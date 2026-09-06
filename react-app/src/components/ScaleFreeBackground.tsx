@@ -9,7 +9,7 @@ export const ScaleFreeBackground: React.FC = () => {
   return (
     <div
       aria-hidden="true"
-      className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-[0.042] select-none"
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-[0.14] select-none"
     >
       <svg
         className="w-full h-full"
@@ -17,7 +17,7 @@ export const ScaleFreeBackground: React.FC = () => {
         preserveAspectRatio="xMidYMid slice"
         viewBox="0 0 1440 900"
       >
-        <g stroke="#171717" strokeWidth="1">
+        <g stroke="#00D2FF" strokeWidth="1">
           {/* Major Hub 1 (Top Left) */}
           <line x1="220" y1="180" x2="380" y2="120" />
           <line x1="220" y1="180" x2="140" y2="310" />
@@ -68,7 +68,7 @@ export const ScaleFreeBackground: React.FC = () => {
         </g>
 
         {/* Nodes */}
-        <g fill="#171717">
+        <g fill="#00D2FF">
           {/* Major Hubs (Larger degree) */}
           <circle cx="220" cy="180" r="7" />
           <circle cx="980" cy="260" r="8" />

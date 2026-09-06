@@ -47,24 +47,24 @@ export const ProblemComparison: React.FC = () => {
         {/* Charts Grid — Renders immediately on mount */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* KV-Cache Chart */}
-          <div className="bg-surface border border-border rounded-lg overflow-hidden shadow-sm flex flex-col">
-            <div className="bg-linen border-b border-border px-4 py-2.5 flex items-center justify-between">
+          <div className="bg-surface/90 border border-border/80 rounded-xl overflow-hidden shadow-md flex flex-col backdrop-blur-sm">
+            <div className="bg-surface-elevated/80 border-b border-border/80 px-4 py-2.5 flex items-center justify-between">
               <span className="text-xs font-semibold text-ink uppercase tracking-wide">KV-Cache Growth</span>
-              <span className="text-xs font-mono text-interference bg-interference/10 px-2 py-0.5 rounded border border-interference/20">
+              <span className="text-xs font-mono text-interference bg-interference/10 px-2 py-0.5 rounded border border-interference/30">
                 O(n) Scaling
               </span>
             </div>
             <div className="p-4 flex justify-center">
               <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto max-w-[440px]">
                 {/* Background */}
-                <rect x={padding.left} y={padding.top} width={plotW} height={plotH} fill="#ffffff" />
+                <rect x={padding.left} y={padding.top} width={plotW} height={plotH} fill="#0E121B" rx={4} />
 
                 {/* Y Grid & Labels */}
                 {yTicks.map(t => {
                   const y = padding.top + plotH * (1 - t.val / 256);
                   return (
                     <g key={t.val}>
-                      <line x1={padding.left} y1={y} x2={padding.left + plotW} y2={y} stroke="#dee2de" strokeWidth={1} />
+                      <line x1={padding.left} y1={y} x2={padding.left + plotW} y2={y} stroke="#1A2130" strokeWidth={1} />
                       <text x={padding.left - 8} y={y + 4} textAnchor="end" className="fill-ink-muted text-[10px] font-mono">
                         {t.label}
                       </text>
@@ -77,7 +77,7 @@ export const ProblemComparison: React.FC = () => {
                   const x = padding.left + (t.val / 8192) * plotW;
                   return (
                     <g key={t.val}>
-                      <line x1={x} y1={padding.top} x2={x} y2={padding.top + plotH} stroke="#dee2de" strokeWidth={1} />
+                      <line x1={x} y1={padding.top} x2={x} y2={padding.top + plotH} stroke="#1A2130" strokeWidth={1} />
                       <text x={x} y={height - padding.bottom + 16} textAnchor="middle" className="fill-ink-muted text-[10px] font-mono">
                         {t.label}
                       </text>
@@ -86,18 +86,18 @@ export const ProblemComparison: React.FC = () => {
                 })}
 
                 {/* Plot Frame */}
-                <rect x={padding.left} y={padding.top} width={plotW} height={plotH} fill="none" stroke="#dee2de" strokeWidth={1} />
+                <rect x={padding.left} y={padding.top} width={plotW} height={plotH} fill="none" stroke="#262B3D" strokeWidth={1} rx={4} />
 
                 {/* Shaded Area */}
                 <polygon
                   points={`${kvX1},${kvY1} ${kvX2},${kvY2} ${kvX2},${kvY1}`}
-                  fill="#c04928"
-                  fillOpacity={0.08}
+                  fill="#FF4D4D"
+                  fillOpacity={0.12}
                 />
 
                 {/* Linear Growth Line */}
-                <line x1={kvX1} y1={kvY1} x2={kvX2} y2={kvY2} stroke="#c04928" strokeWidth={2.5} />
-                <circle cx={kvX2} cy={kvY2} r={4} fill="#c04928" />
+                <line x1={kvX1} y1={kvY1} x2={kvX2} y2={kvY2} stroke="#FF4D4D" strokeWidth={2.5} />
+                <circle cx={kvX2} cy={kvY2} r={4} fill="#FF4D4D" />
 
                 {/* Label readout */}
                 <text x={kvX2 - 12} y={kvY2 + 18} textAnchor="end" className="fill-ink font-mono text-[11px] font-semibold">
@@ -105,7 +105,7 @@ export const ProblemComparison: React.FC = () => {
                 </text>
 
                 {/* Axis Titles */}
-                <text x={padding.left + plotW / 2} y={height - 8} textAnchor="middle" className="fill-ink text-[11px] font-sans">
+                <text x={padding.left + plotW / 2} y={height - 8} textAnchor="middle" className="fill-ink-muted text-[11px] font-mono">
                   Sequence Length (tokens)
                 </text>
                 <text
@@ -113,36 +113,36 @@ export const ProblemComparison: React.FC = () => {
                   y={16}
                   transform="rotate(-90)"
                   textAnchor="middle"
-                  className="fill-ink text-[11px] font-sans"
+                  className="fill-ink-muted text-[11px] font-mono"
                 >
                   Memory Footprint (MB)
                 </text>
               </svg>
             </div>
-            <p className="px-4 py-3 text-xs text-ink-muted border-t border-border bg-linen/30 m-0">
+            <p className="px-4 py-3 text-xs text-ink-muted border-t border-border/70 bg-surface-elevated/40 m-0">
               Each new token adds a new key and value vector. At sequence length <em>n</em>, memory usage is <strong>O(n)</strong>. For long conversations, this becomes the dominant cost.
             </p>
           </div>
 
           {/* Fixed-State Chart */}
-          <div className="bg-surface border border-border rounded-lg overflow-hidden shadow-sm flex flex-col">
-            <div className="bg-linen border-b border-border px-4 py-2.5 flex items-center justify-between">
+          <div className="bg-surface/90 border border-border/80 rounded-xl overflow-hidden shadow-md flex flex-col backdrop-blur-sm">
+            <div className="bg-surface-elevated/80 border-b border-border/80 px-4 py-2.5 flex items-center justify-between">
               <span className="text-xs font-semibold text-ink uppercase tracking-wide">The Alternative: Fixed-Size State</span>
-              <span className="text-xs font-mono text-memory bg-memory/10 px-2 py-0.5 rounded border border-memory/20">
+              <span className="text-xs font-mono text-memory bg-memory/10 px-2 py-0.5 rounded border border-memory/30">
                 O(1) Memory
               </span>
             </div>
             <div className="p-4 flex justify-center">
               <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto max-w-[440px]">
                 {/* Background */}
-                <rect x={padding.left} y={padding.top} width={plotW} height={plotH} fill="#ffffff" />
+                <rect x={padding.left} y={padding.top} width={plotW} height={plotH} fill="#0E121B" rx={4} />
 
                 {/* Y Grid & Labels */}
                 {yTicks.map(t => {
                   const y = padding.top + plotH * (1 - t.val / 256);
                   return (
                     <g key={t.val}>
-                      <line x1={padding.left} y1={y} x2={padding.left + plotW} y2={y} stroke="#dee2de" strokeWidth={1} />
+                      <line x1={padding.left} y1={y} x2={padding.left + plotW} y2={y} stroke="#1A2130" strokeWidth={1} />
                       <text x={padding.left - 8} y={y + 4} textAnchor="end" className="fill-ink-muted text-[10px] font-mono">
                         {t.label}
                       </text>
@@ -155,7 +155,7 @@ export const ProblemComparison: React.FC = () => {
                   const x = padding.left + (t.val / 8192) * plotW;
                   return (
                     <g key={t.val}>
-                      <line x1={x} y1={padding.top} x2={x} y2={padding.top + plotH} stroke="#dee2de" strokeWidth={1} />
+                      <line x1={x} y1={padding.top} x2={x} y2={padding.top + plotH} stroke="#1A2130" strokeWidth={1} />
                       <text x={x} y={height - padding.bottom + 16} textAnchor="middle" className="fill-ink-muted text-[10px] font-mono">
                         {t.label}
                       </text>
@@ -164,7 +164,7 @@ export const ProblemComparison: React.FC = () => {
                 })}
 
                 {/* Plot Frame */}
-                <rect x={padding.left} y={padding.top} width={plotW} height={plotH} fill="none" stroke="#dee2de" strokeWidth={1} />
+                <rect x={padding.left} y={padding.top} width={plotW} height={plotH} fill="none" stroke="#262B3D" strokeWidth={1} rx={4} />
 
                 {/* Shaded Area for Constant Memory */}
                 <rect
@@ -172,13 +172,13 @@ export const ProblemComparison: React.FC = () => {
                   y={fixedY}
                   width={plotW}
                   height={padding.top + plotH - fixedY}
-                  fill="#1d6fa5"
-                  fillOpacity={0.08}
+                  fill="#00D2FF"
+                  fillOpacity={0.12}
                 />
 
                 {/* Constant Line */}
-                <line x1={padding.left} y1={fixedY} x2={padding.left + plotW} y2={fixedY} stroke="#1d6fa5" strokeWidth={2.5} />
-                <circle cx={padding.left + plotW} cy={fixedY} r={4} fill="#1d6fa5" />
+                <line x1={padding.left} y1={fixedY} x2={padding.left + plotW} y2={fixedY} stroke="#00D2FF" strokeWidth={2.5} />
+                <circle cx={padding.left + plotW} cy={fixedY} r={4} fill="#00D2FF" />
 
                 {/* Label readout */}
                 <text x={padding.left + 15} y={fixedY - 8} className="fill-ink font-mono text-[11px] font-semibold">
@@ -186,7 +186,7 @@ export const ProblemComparison: React.FC = () => {
                 </text>
 
                 {/* Axis Titles */}
-                <text x={padding.left + plotW / 2} y={height - 8} textAnchor="middle" className="fill-ink text-[11px] font-sans">
+                <text x={padding.left + plotW / 2} y={height - 8} textAnchor="middle" className="fill-ink-muted text-[11px] font-mono">
                   Sequence Length (tokens)
                 </text>
                 <text
@@ -194,13 +194,13 @@ export const ProblemComparison: React.FC = () => {
                   y={16}
                   transform="rotate(-90)"
                   textAnchor="middle"
-                  className="fill-ink text-[11px] font-sans"
+                  className="fill-ink-muted text-[11px] font-mono"
                 >
                   Memory Footprint (MB)
                 </text>
               </svg>
             </div>
-            <p className="px-4 py-3 text-xs text-ink-muted border-t border-border bg-linen/30 m-0">
+            <p className="px-4 py-3 text-xs text-ink-muted border-t border-border/70 bg-surface-elevated/40 m-0">
               What if instead of growing the cache, we compress everything into a <strong>fixed-size matrix</strong>? Memory stays constant — <strong>O(1)</strong> — regardless of sequence length. But there's a cost…
             </p>
           </div>
@@ -209,32 +209,32 @@ export const ProblemComparison: React.FC = () => {
         {/* The Fundamental Tradeoff Table */}
         <div className="mt-8">
           <h3 className="text-xl font-display text-ink mb-3">The Fundamental Tradeoff</h3>
-          <div className="overflow-x-auto bg-surface border border-border rounded-lg shadow-sm">
+          <div className="overflow-x-auto bg-surface/90 border border-border/80 rounded-xl shadow-md backdrop-blur-sm">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="bg-linen border-b-2 border-border">
+                <tr className="bg-surface-elevated/80 border-b border-border/80">
                   <th className="py-3 px-4 text-xs font-semibold text-ink">Property</th>
                   <th className="py-3 px-4 text-xs font-semibold text-ink">KV-Cache (Transformer)</th>
                   <th className="py-3 px-4 text-xs font-semibold text-ink">Fixed-Size Recurrent State</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
-                <tr className="hover:bg-linen/50">
+              <tbody className="divide-y divide-border/60">
+                <tr className="hover:bg-surface-elevated/40 transition-colors">
                   <td className="py-3 px-4 font-medium text-ink">Memory per step</td>
                   <td className="py-3 px-4 text-ink">Grows: O(n)</td>
                   <td className="py-3 px-4 text-memory font-semibold">Constant: O(1)</td>
                 </tr>
-                <tr className="hover:bg-linen/50">
+                <tr className="hover:bg-surface-elevated/40 transition-colors">
                   <td className="py-3 px-4 font-medium text-ink">Recall fidelity</td>
                   <td className="py-3 px-4 text-truth font-semibold">Perfect — everything stored</td>
                   <td className="py-3 px-4 text-ink">Degrades under load</td>
                 </tr>
-                <tr className="hover:bg-linen/50">
+                <tr className="hover:bg-surface-elevated/40 transition-colors">
                   <td className="py-3 px-4 font-medium text-ink">Inference cost</td>
                   <td className="py-3 px-4 text-ink">Grows with context</td>
                   <td className="py-3 px-4 text-memory font-semibold">Constant</td>
                 </tr>
-                <tr className="hover:bg-linen/50">
+                <tr className="hover:bg-surface-elevated/40 transition-colors">
                   <td className="py-3 px-4 font-medium text-ink">Failure mode</td>
                   <td className="py-3 px-4 text-ink">OOM / quadratic slowdown</td>
                   <td className="py-3 px-4 text-interference font-medium">Interference — memories corrupt each other</td>
@@ -242,7 +242,7 @@ export const ProblemComparison: React.FC = () => {
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-ink-muted italic border-t border-border pt-3 mt-4">
+          <p className="text-xs text-ink-muted italic border-t border-border/70 pt-3 mt-4">
             This is the core tradeoff this explainer teaches. BDH ({' '}
             <a
               href="https://arxiv.org/abs/2509.26507"

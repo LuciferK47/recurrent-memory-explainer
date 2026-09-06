@@ -14,6 +14,7 @@ import { CitationsModal } from './components/CitationsModal';
 import { ReadmeModal } from './components/ReadmeModal';
 import {
   Matrix,
+  Vector,
   createZeroMatrix,
   writeAssociation,
   randomUnitVector,
@@ -152,6 +153,25 @@ export const App: React.FC = () => {
     setPairCounter(0);
   }, [dim]);
 
+  // Add Custom Key-Value Pair
+  const handleAddCustomPair = useCallback(
+    (k: Vector, v: Vector, label: string) => {
+      const newM = writeAssociation(matrix, k, v);
+      setMatrix(newM);
+      setPairs(prev => [
+        ...prev,
+        {
+          id: `custom-${Date.now()}-${Math.random()}`,
+          key: k,
+          value: v,
+          label,
+        },
+      ]);
+      setPairCounter(prev => prev + 1);
+    },
+    [matrix]
+  );
+
   return (
     <div className="min-h-screen bg-canvas text-ink flex flex-col selection:bg-memory/20 relative">
       <ScaleFreeBackground />
@@ -168,6 +188,7 @@ export const App: React.FC = () => {
           onAddPair={handleAddPair}
           onAddFive={handleAddFive}
           onClear={handleClear}
+          onAddCustomPair={handleAddCustomPair}
         />
         <BDHModule />
         <BreakingPoint />

@@ -35,9 +35,9 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
               Learns — and Forgets
             </h1>
 
-            <div className="bg-surface border border-border border-l-4 border-l-memory rounded-lg p-5 sm:p-6 shadow-sm mb-6">
+            <div className="bg-surface/80 border border-border/80 border-l-4 border-l-memory rounded-xl p-5 sm:p-6 shadow-glow-sm mb-6 backdrop-blur-sm">
               <p className="text-ink text-base sm:text-lg leading-relaxed m-0">
-                <span className="font-semibold text-ink">Claim:</span> A fixed-size recurrent memory can absorb key–value associations from demonstrations and recall them accurately —{' '}
+                <span className="font-semibold text-memory">Claim:</span> A fixed-size recurrent memory can absorb key–value associations from demonstrations and recall them accurately —{' '}
                 <span className="text-interference font-medium">
                   until the number of associations exceeds the memory's rank, at which point recall degrades through interference
                 </span>{' '}
@@ -50,8 +50,8 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
             </p>
 
             {/* Active Instrument Register summary */}
-            <div className="inline-flex items-center gap-2 bg-linen border border-border rounded-full px-4 py-1.5 mb-8 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-truth animate-pulse" />
+            <div className="inline-flex items-center gap-2 bg-surface-elevated/80 border border-border/80 rounded-full px-4 py-1.5 mb-8 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-truth animate-pulse shadow-[0_0_8px_rgba(0,229,163,0.8)]" />
               <span className="text-xs text-ink font-mono">
                 Active Instrument Register: <strong className="text-memory font-semibold">{storedCount} pairs</strong> pre-loaded in d = {dim} memory matrix
               </span>
@@ -62,7 +62,7 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
                 href="#problem"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="inline-flex items-center gap-2 border border-memory text-memory hover:bg-memory/10 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                className="inline-flex items-center gap-2 bg-memory/15 border border-memory/60 text-memory hover:bg-memory/25 px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-[0_0_15px_rgba(0,210,255,0.2)]"
               >
                 Start Walkthrough <span>&rarr;</span>
               </motion.a>
@@ -70,7 +70,7 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
                 href="#memory"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="inline-flex items-center gap-2 border border-border text-ink hover:bg-linen px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                className="inline-flex items-center gap-2 bg-surface border border-border/80 text-ink hover:bg-surface-elevated hover:border-memory/40 px-5 py-2.5 rounded-lg text-sm font-medium transition-all"
               >
                 Jump to Live Lab
               </motion.a>
@@ -79,15 +79,15 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
 
           {/* Right Column: Signature Centerpiece Animated Hebbian Synaptic Network */}
           <div className="lg:col-span-5 w-full">
-            <div className="bg-surface/90 border border-border rounded-xl shadow-md p-4 sm:p-6 backdrop-blur-md relative overflow-hidden">
-              <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
+            <div className="bg-surface/90 border border-border/80 rounded-xl shadow-xl p-4 sm:p-6 backdrop-blur-md relative overflow-hidden">
+              <div className="flex items-center justify-between border-b border-border/70 pb-3 mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-memory animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-memory animate-pulse shadow-[0_0_8px_rgba(0,210,255,0.8)]" />
                   <span className="text-[11px] font-mono font-semibold text-ink uppercase tracking-wider">
                     Synaptic Junction // M &larr; &Sigma; v&middot;k<sup>T</sup>
                   </span>
                 </div>
-                <span className="text-[10px] font-mono text-ink-muted bg-linen px-2 py-0.5 rounded border border-border">
+                <span className="text-[10px] font-mono text-memory bg-memory/10 px-2 py-0.5 rounded border border-memory/30">
                   d = 4 Sub-Graph
                 </span>
               </div>
@@ -100,19 +100,19 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
                   style={{ filter: 'contrast(1.05)' }}
                 >
                   <defs>
-                    {/* Soft Phosphor Glow Filters for Memory (Blue) and Interference (Amber/Red) */}
-                    <filter id="glow-memory" x="-20%" y="-20%" width="140%" height="140%">
-                      <feGaussianBlur stdDeviation="3" result="blur" />
+                    {/* Phosphor Glow Filters for Memory (Cyan) and Value (Emerald) */}
+                    <filter id="glow-memory" x="-30%" y="-30%" width="160%" height="160%">
+                      <feGaussianBlur stdDeviation="3.5" result="blur" />
                       <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
-                    <filter id="glow-interference" x="-20%" y="-20%" width="140%" height="140%">
-                      <feGaussianBlur stdDeviation="3" result="blur" />
+                    <filter id="glow-value" x="-30%" y="-30%" width="160%" height="160%">
+                      <feGaussianBlur stdDeviation="3.5" result="blur" />
                       <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
                     <linearGradient id="synapse-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#1d6fa5" stopOpacity="0.8" />
-                      <stop offset="50%" stopColor="#dee2de" stopOpacity="0.5" />
-                      <stop offset="100%" stopColor="#c04928" stopOpacity="0.8" />
+                      <stop offset="0%" stopColor="#00D2FF" stopOpacity="0.8" />
+                      <stop offset="50%" stopColor="#1E2433" stopOpacity="0.5" />
+                      <stop offset="100%" stopColor="#00E5A3" stopOpacity="0.8" />
                     </linearGradient>
                   </defs>
 
@@ -131,14 +131,14 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
                             y1={k.y}
                             x2={junctionX}
                             y2={junctionY}
-                            stroke={isDiagonal ? '#1d6fa5' : '#dee2de'}
+                            stroke={isDiagonal ? '#00D2FF' : '#1A2130'}
                             strokeWidth={isDiagonal ? 1.75 : 0.8}
                             initial={{ pathLength: 0, opacity: 0 }}
                             animate={{
                               pathLength: 1,
                               opacity: isDiagonal
-                                ? [0.4, 0.9, 0.4]
-                                : [0.15, 0.45, 0.15],
+                                ? [0.5, 1, 0.5]
+                                : [0.1, 0.35, 0.1],
                             }}
                             transition={{
                               pathLength: { duration: 0.8, delay: (k.id + v.id) * 0.08 },
@@ -157,14 +157,14 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
                             y1={junctionY}
                             x2="305"
                             y2={v.y}
-                            stroke={isDiagonal ? '#c04928' : '#dee2de'}
+                            stroke={isDiagonal ? '#00E5A3' : '#1A2130'}
                             strokeWidth={isDiagonal ? 1.75 : 0.8}
                             initial={{ pathLength: 0, opacity: 0 }}
                             animate={{
                               pathLength: 1,
                               opacity: isDiagonal
-                                ? [0.4, 0.9, 0.4]
-                                : [0.15, 0.45, 0.15],
+                                ? [0.5, 1, 0.5]
+                                : [0.1, 0.35, 0.1],
                             }}
                             transition={{
                               pathLength: { duration: 0.8, delay: 0.4 + (k.id + v.id) * 0.08 },
@@ -188,16 +188,15 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
                     width="84"
                     height="224"
                     rx="6"
-                    fill="#fefffc"
-                    stroke="#dee2de"
-                    strokeWidth="1"
-                    className="shadow-sm"
+                    fill="#10141D"
+                    stroke="#262B3D"
+                    strokeWidth="1.2"
                   />
                   <text
                     x="180"
                     y="32"
                     textAnchor="middle"
-                    className="fill-ink-muted text-[8px] font-mono tracking-wider"
+                    className="fill-ink-muted text-[8px] font-mono tracking-wider font-semibold"
                   >
                     MATRIX M
                   </text>
@@ -215,8 +214,8 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
                             cx={jx}
                             cy={jy}
                             r={isReinforced ? 5.5 : 3.5}
-                            fill={isReinforced ? '#1d6fa5' : '#f9faf7'}
-                            stroke={isReinforced ? '#1d6fa5' : '#dee2de'}
+                            fill={isReinforced ? '#00D2FF' : '#181D29'}
+                            stroke={isReinforced ? '#00D2FF' : '#2A3042'}
                             strokeWidth={1}
                             filter={isReinforced ? 'url(#glow-memory)' : undefined}
                             initial={{ scale: 0 }}
@@ -229,10 +228,10 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
                               cy={jy}
                               r={8.5}
                               fill="none"
-                              stroke="#1d6fa5"
+                              stroke="#00D2FF"
                               strokeWidth={0.8}
                               initial={{ opacity: 0.8, scale: 0.8 }}
-                              animate={{ opacity: [0.3, 0.8, 0.3], scale: [0.9, 1.3, 0.9] }}
+                              animate={{ opacity: [0.3, 0.9, 0.3], scale: [0.9, 1.3, 0.9] }}
                               transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut' }}
                             />
                           )}
@@ -241,22 +240,22 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
                     })
                   )}
 
-                  {/* Left Column: Key Glowing Circular Nodes (Memory Blue) */}
+                  {/* Left Column: Key Glowing Circular Nodes (Memory Cyan) */}
                   {keyNodes.map(k => (
                     <g key={`key-node-${k.id}`}>
                       {/* Outer pulse aura */}
-                      <circle cx="45" cy={k.y} r="14" fill="#1d6fa5" fillOpacity="0.08" />
+                      <circle cx="45" cy={k.y} r="14" fill="#00D2FF" fillOpacity="0.12" />
                       {/* Glowing Node Circle */}
                       <circle
                         cx="45"
                         cy={k.y}
                         r="10"
-                        fill="#ffffff"
-                        stroke="#1d6fa5"
-                        strokeWidth="2"
+                        fill="#0E121B"
+                        stroke="#00D2FF"
+                        strokeWidth="1.8"
                         filter="url(#glow-memory)"
                       />
-                      <circle cx="45" cy={k.y} r="4" fill="#1d6fa5" />
+                      <circle cx="45" cy={k.y} r="4" fill="#00D2FF" />
                       <text
                         x="24"
                         y={k.y + 4}
@@ -268,22 +267,22 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
                     </g>
                   ))}
 
-                  {/* Right Column: Value Glowing Circular Nodes (Interference Amber/Red) */}
+                  {/* Right Column: Value Glowing Circular Nodes (Truth Emerald) */}
                   {valueNodes.map(v => (
                     <g key={`val-node-${v.id}`}>
                       {/* Outer pulse aura */}
-                      <circle cx="315" cy={v.y} r="14" fill="#c04928" fillOpacity="0.08" />
+                      <circle cx="315" cy={v.y} r="14" fill="#00E5A3" fillOpacity="0.12" />
                       {/* Glowing Node Circle */}
                       <circle
                         cx="315"
                         cy={v.y}
                         r="10"
-                        fill="#ffffff"
-                        stroke="#c04928"
-                        strokeWidth="2"
-                        filter="url(#glow-interference)"
+                        fill="#0E121B"
+                        stroke="#00E5A3"
+                        strokeWidth="1.8"
+                        filter="url(#glow-value)"
                       />
-                      <circle cx="315" cy={v.y} r="4" fill="#c04928" />
+                      <circle cx="315" cy={v.y} r="4" fill="#00E5A3" />
                       <text
                         x="335"
                         y={v.y + 4}
@@ -297,10 +296,10 @@ export const Hero: React.FC<HeroProps> = ({ storedCount, dim }) => {
                 </svg>
               </div>
 
-              <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-[11px] font-mono text-ink-muted">
-                <span>KEYS (k &isin; R<sup>d</sup>)</span>
-                <span className="text-memory font-semibold">M &larr; M + v&middot;k<sup>T</sup></span>
-                <span>VALUES (v &isin; R<sup>d</sup>)</span>
+              <div className="mt-3 pt-3 border-t border-border/70 flex items-center justify-between text-[11px] font-mono text-ink-muted">
+                <span className="text-memory">KEYS (k &isin; R<sup>d</sup>)</span>
+                <span className="text-ink font-semibold">M &larr; M + v&middot;k<sup>T</sup></span>
+                <span className="text-truth">VALUES (v &isin; R<sup>d</sup>)</span>
               </div>
             </div>
           </div>

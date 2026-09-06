@@ -10,15 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
-        onload="renderMathInElement(document.body, {delimiters: [{left: '365967', right: '365967', display: true}, {left: '$', right: '$', display: false}]});"></script>
+        onload="renderMathInElement(document.body, {delimiters: [{left: '392063', right: '392063', display: true}, {left: '$', right: '$', display: false}]});"></script>
     <style>
         :root {
-            --bg-canvas: #f8f6f0;
-            --bg-surface: #ffffff;
-            --text-ink: #1a1917;
-            --text-muted: #6b6964;
-            --border: #e2ded4;
-            --accent-memory: #2563eb;
+            --bg-canvas: #0B0C0E;
+            --bg-surface: #14161B;
+            --text-ink: #F1F5F9;
+            --text-muted: #94A3B8;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent-memory: #00D2FF;
             --font-display: 'Fraunces', serif;
             --font-body: 'Inter', -apple-system, sans-serif;
             --font-mono: ui-monospace, SFMono-Regular, monospace;
@@ -32,13 +32,13 @@
             padding: 2rem 1rem;
         }
         .container {
-            max-width: 800px;
+            max-width: 840px;
             margin: 0 auto;
             background: var(--bg-surface);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 2.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
         .nav-back {
             display: inline-flex;
@@ -50,11 +50,12 @@
             text-decoration: none;
             margin-bottom: 1.5rem;
             padding: 0.35rem 0.75rem;
-            background: rgba(37, 99, 235, 0.08);
+            background: rgba(0, 210, 255, 0.08);
+            border: 1px solid rgba(0, 210, 255, 0.2);
             border-radius: 6px;
         }
         .nav-back:hover {
-            background: rgba(37, 99, 235, 0.15);
+            background: rgba(0, 210, 255, 0.15);
         }
         h1 {
             font-family: var(--font-display);
@@ -63,6 +64,7 @@
             margin-top: 0;
             margin-bottom: 1rem;
             letter-spacing: -0.02em;
+            color: #FFFFFF;
         }
         h2 {
             font-family: var(--font-display);
@@ -72,6 +74,7 @@
             margin-bottom: 0.75rem;
             border-bottom: 1px solid var(--border);
             padding-bottom: 0.5rem;
+            color: #F8FAFC;
         }
         hr {
             border: 0;
@@ -97,7 +100,7 @@
         code {
             font-family: var(--font-mono);
             font-size: 0.85em;
-            background: #f1ede4;
+            background: rgba(255, 255, 255, 0.06);
             padding: 0.15rem 0.35rem;
             border-radius: 4px;
         }
@@ -123,7 +126,7 @@
 <li><strong>Authors</strong>: Tsendsuren Munkhdalai, Manaal Faruqui, Siddharth Gopal</li>
 <p>   <em> <strong>Title</strong>: </em>Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention*</p>
 <li><strong>Preprint</strong>: <a href="https://arxiv.org/abs/2404.07143" target="_blank" rel="noopener noreferrer">arXiv:2404.07143</a> (April 2024)</li>
-<li><strong>Relevance to Explainer</strong>: Demonstrates how a fixed-size compressive memory state ($d \times d$) can be updated using outer-product Hebbian-style writes alongside local masked multi-head attention, enabling bounded-memory context scaling up to 1M+ tokens without $O(n^2)$ KV-cache footprint.</li>
+<li><strong>Theoretical & Project Context</strong>: Demonstrates how a fixed-size compressive memory state ($d \times d$) can be updated using outer-product Hebbian-style writes alongside local masked multi-head attention, enabling bounded-memory context scaling up to 1M+ tokens without $O(n^2)$ KV-cache footprint.</li>
 </ul>
 
 <ol class="citation-list">
@@ -133,7 +136,7 @@
 <li><strong>Authors</strong>: Ali Behrouz, Peilin Zhong, Vahab Mirrokni</li>
 <p>   <em> <strong>Title</strong>: </em>Titans: Learning to Memorize at Test Time*</p>
 <li><strong>Preprint</strong>: <a href="https://arxiv.org/abs/2501.00663" target="_blank" rel="noopener noreferrer">arXiv:2501.00663</a> (January 2025)</li>
-<li><strong>Relevance to Explainer</strong>: Establishes a formal distinction between fast short-term associative attention and a recurrent deep neural memory module that actively learns key–value associations at inference time, scaling to contexts beyond 2M tokens.</li>
+<li><strong>Theoretical & Project Context</strong>: Establishes a formal distinction between fast short-term associative attention and a recurrent deep neural memory module that actively learns key–value associations at inference time, scaling to contexts beyond 2M tokens.</li>
 </ul>
 
 <ol class="citation-list">
@@ -143,7 +146,7 @@
 <li><strong>Authors</strong>: Songlin Yang, Jan Kautz, Ali Hatamizadeh (MIT CSAIL / NVIDIA; ICLR 2025)</li>
 <p>   <em> <strong>Title</strong>: </em>Gated Delta Networks: Improving Mamba2 with Delta Rule*</p>
 <li><strong>Preprint</strong>: <a href="https://arxiv.org/abs/2412.06464" target="_blank" rel="noopener noreferrer">arXiv:2412.06464</a> (December 2024; revised March 2025)</li>
-<li><strong>Relevance to Explainer</strong>: Investigates the catastrophic interference problem in outer-product recurrent matrices and proposes gating combined with the delta-rule update ($M \leftarrow M - \beta (M k - v) k^T$) to selectively erase outdated associations and mitigate cross-talk.</li>
+<li><strong>Theoretical & Project Context</strong>: Investigates the catastrophic interference problem in outer-product recurrent matrices and proposes gating combined with the delta-rule update ($M \leftarrow M - \beta (M k - v) k^T$) to selectively erase outdated associations and mitigate cross-talk.</li>
 </ul>
 
 <ol class="citation-list">
@@ -153,7 +156,7 @@
 <li><strong>Authors</strong>: Vishal Pandey, Gopal Singh</li>
 <p>   <em> <strong>Title</strong>: </em>Variational Linear Attention: Stable Associative Memory for Long-Context Transformers*</p>
 <li><strong>Preprint</strong>: <a href="https://arxiv.org/abs/2605.11196" target="_blank" rel="noopener noreferrer">arXiv:2605.11196</a> (May 2026)</li>
-<li><strong>Relevance to Explainer</strong>: Reframes the linear memory update as an online regularized least-squares problem with an adaptive penalty matrix maintained via the Sherman-Morrison rank-1 formula. Proves that normalizing write directions to unit length guarantees recurrence Jacobian spectral norm of exactly 1 with bounded state growth (reducing $\|S_t\|_F$ by $109\times$ relative to standard linear attention at $T=1000$). Achieves near-perfect exact-match associative recall within the per-head capacity regime and maintains 62% accuracy at the capacity boundary.</li>
+<li><strong>Theoretical & Project Context</strong>: Reframes the linear memory update as an online regularized least-squares problem with an adaptive penalty matrix maintained via the Sherman-Morrison rank-1 formula. Proves that normalizing write directions to unit length guarantees recurrence Jacobian spectral norm of exactly 1 with bounded state growth (reducing $\|S_t\|_F$ by $109\times$ relative to standard linear attention at $T=1000$). Achieves near-perfect exact-match associative recall within the per-head capacity regime and maintains 62% accuracy at the capacity boundary.</li>
 </ul>
 
 <hr/>
@@ -169,7 +172,7 @@
 <li><strong>Authors</strong>: Adrian Kosowski, Przemysław Uznański, Jan Chorowski, Zuzanna Stamirowska, Michał Bartoszkiewicz (Pathway Research)</li>
 <p>   <em> <strong>Title</strong>: </em>The Dragon Hatchling: The Missing Link between the Transformer and Models of the Brain*</p>
 <li><strong>Preprint</strong>: <a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noopener noreferrer">arXiv:2509.26507</a> (September 2025)</li>
-<li><strong>Relevance to Explainer</strong>: Introduces the scale-free, biologically-inspired graph of neuron particles where working memory emerges directly from Hebbian synaptic plasticity ($M \leftarrow M + v k^T$). Documents ~5% activation sparsity, monosemantic synaptic connections, and the GPU-efficient linear attention formulation (BDH-GPU, Section 4).</li>
+<li><strong>Theoretical & Project Context</strong>: Introduces the scale-free, biologically-inspired graph of neuron particles where working memory emerges directly from Hebbian synaptic plasticity ($M \leftarrow M + v k^T$). Documents ~5% activation sparsity, monosemantic synaptic connections, and the GPU-efficient linear attention formulation (BDH-GPU, Section 4).</li>
 </ul>
 
 <ol class="citation-list">
@@ -180,7 +183,7 @@
 <p>   <em> <strong>Title</strong>: </em>BDH-CQ: In-Context Learning with Recurrent Latent Reasoning*</p>
 <li><strong>Preprint</strong>: <a href="https://arxiv.org/abs/2608.09888" target="_blank" rel="noopener noreferrer">arXiv:2608.09888</a> (August 2026)</li>
 <li><strong>Hugging Face Paper Discussion</strong>: <a href="https://huggingface.co/papers/2608.09888" target="_blank" rel="noopener noreferrer">huggingface.co/papers/2608.09888</a></li>
-<li><strong>Relevance to Explainer</strong>: Details how demonstration input–output pairs are absorbed directly into recurrent latent state at inference time without gradient descent or verbose chain-of-thought token generation. Evaluates the self-reported 29.5% pass@2 benchmark on ARC-AGI-1 ($0.0007/task, with a partner-institution audit) and explicitly documents the 0/72 failure on color-swap composition.</li>
+<li><strong>Theoretical & Project Context</strong>: Details how demonstration input–output pairs are absorbed directly into recurrent latent state at inference time without gradient descent or verbose chain-of-thought token generation. Evaluates the self-reported 29.5% pass@2 benchmark on ARC-AGI-1 ($0.0007/task, with a partner-institution audit) and explicitly documents the 0/72 failure on color-swap composition.</li>
 </ul>
 
 <ol class="citation-list">

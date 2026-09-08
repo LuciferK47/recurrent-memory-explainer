@@ -2,7 +2,7 @@
 
 ### An Authoritative Concept Briefing | DataForge 2026 × Pathway Track
 
-**Submission Package:** [Interactive Explainer](https://github.com/LuciferK47/recurrent-memory-explainer) &middot; **Artifact Repository:** `github.com/LuciferK47/recurrent-memory-explainer`  
+**Live Interactive Explainer:** https://luciferk47.github.io/recurrent-memory-explainer/ &middot; **Source Repository:** `github.com/LuciferK47/recurrent-memory-explainer`
 **Authors:** Team DataForge &middot; **Core Reference:** arXiv:2509.26507 (BDH) & arXiv:2608.09888 (BDH-CQ)
 
 ---

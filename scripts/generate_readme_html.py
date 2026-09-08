@@ -96,12 +96,14 @@ template = f'''<!DOCTYPE html>
         onload="renderMathInElement(document.body, {{delimiters: [{{left: '$$', right: '$$', display: true}}, {{left: '$', right: '$', display: false}}]}});"></script>
     <style>
         :root {{
-            --bg-canvas: #f8f6f0;
-            --bg-surface: #ffffff;
-            --text-ink: #1a1917;
-            --text-muted: #6b6964;
-            --border: #e2ded4;
-            --accent-memory: #2563eb;
+            /* Matches react-app/src/index.css's :root and docs/citations.html —
+               all three should read as the same dark surface. */
+            --bg-canvas: #08161B;
+            --bg-surface: #16262F;
+            --text-ink: #EAF2F5;
+            --text-muted: #9DB2BC;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent-memory: #00D2FF;
             --font-display: 'Fraunces', serif;
             --font-body: 'Inter', -apple-system, sans-serif;
             --font-mono: ui-monospace, SFMono-Regular, monospace;
@@ -121,7 +123,7 @@ template = f'''<!DOCTYPE html>
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 2.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }}
         .nav-back {{
             display: inline-flex;
@@ -133,11 +135,12 @@ template = f'''<!DOCTYPE html>
             text-decoration: none;
             margin-bottom: 1.5rem;
             padding: 0.35rem 0.75rem;
-            background: rgba(37, 99, 235, 0.08);
+            background: rgba(0, 210, 255, 0.08);
+            border: 1px solid rgba(0, 210, 255, 0.2);
             border-radius: 6px;
         }}
         .nav-back:hover {{
-            background: rgba(37, 99, 235, 0.15);
+            background: rgba(0, 210, 255, 0.15);
         }}
         h1 {{
             font-family: var(--font-display);
@@ -146,6 +149,7 @@ template = f'''<!DOCTYPE html>
             margin-top: 0;
             margin-bottom: 1rem;
             letter-spacing: -0.02em;
+            color: #FFFFFF;
         }}
         h2 {{
             font-family: var(--font-display);
@@ -155,6 +159,7 @@ template = f'''<!DOCTYPE html>
             margin-bottom: 0.75rem;
             border-bottom: 1px solid var(--border);
             padding-bottom: 0.5rem;
+            color: #F8FAFC;
         }}
         hr {{
             border: 0;
@@ -172,14 +177,14 @@ template = f'''<!DOCTYPE html>
             margin: 1rem 0;
             color: var(--text-muted);
             font-style: italic;
-            background: rgba(37, 99, 235, 0.04);
+            background: rgba(0, 210, 255, 0.05);
             border-radius: 0 6px 6px 0;
             padding-top: 0.5rem;
             padding-bottom: 0.5rem;
         }}
         pre {{
-            background: #1e1e1e;
-            color: #d4d4d4;
+            background: #030A0D;
+            color: #E2E8F0;
             padding: 1rem;
             border-radius: 8px;
             overflow-x: auto;
@@ -187,13 +192,15 @@ template = f'''<!DOCTYPE html>
             font-size: 0.85rem;
             line-height: 1.5;
             margin: 1rem 0;
+            border: 1px solid var(--border);
         }}
         code {{
             font-family: var(--font-mono);
             font-size: 0.85em;
-            background: #f1ede4;
+            background: rgba(255, 255, 255, 0.08);
             padding: 0.15rem 0.35rem;
             border-radius: 4px;
+            color: var(--accent-memory);
         }}
         pre code {{
             background: transparent;
@@ -215,11 +222,12 @@ template = f'''<!DOCTYPE html>
             text-align: left;
         }}
         th {{
-            background: #f1ede4;
+            background: #1B2E38;
             font-weight: 600;
+            color: #F8FAFC;
         }}
         tr:nth-child(even) {{
-            background: rgba(0, 0, 0, 0.02);
+            background: rgba(255, 255, 255, 0.02);
         }}
     </style>
 </head>

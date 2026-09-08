@@ -64,5 +64,6 @@ Primary research from Pathway establishing the Dragon Hatchling (BDH) architectu
 ## Licensing & Derivative Records
 
 - **Interactive Explainer Code**: MIT License (Copyright &copy; 2026 Team DataForge × Pathway).
-- **Fonts**: Departure Mono, Inter, Fraunces (SIL Open Font License 1.1).
+- **Fonts**: Departure Mono, Inter, Fraunces, JetBrains Mono (SIL Open Font License 1.1).
 - **Math Engine**: KaTeX (MIT License).
+- **Full third-party record**: see [`ATTRIBUTIONS.md`](../ATTRIBUTIONS.md) at the repository root.

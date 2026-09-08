@@ -2,26 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Departure Mono is self-hosted (SIL OFL) — no third-party CDN fallback, so the
+   type identity never depends on a live network request beyond this deploy. */
 @font-face {
   font-family: 'Departure Mono';
-  src: url('/fonts/DepartureMono-Regular.woff2') format('woff2'),
-       url('https://cdn.jsdelivr.net/gh/projectnoonnu/2409-1@1.0/DepartureMono-Regular.woff2') format('woff2');
+  src: url('/fonts/DepartureMono-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
+/* ==========================================================================
+   Design tokens — one dark palette, plus a deeper "well" scope.
+
+   The page ground is a dark teal, matching the isometric circuit-city
+   background it sits on (see components/background/). `.instrument-panel`
+   rescopes the same custom properties one step deeper, for surfaces that
+   should read as a recessed well rather than a raised panel — the Hero's
+   synaptic diagram and the two document modals. Descendants using the
+   *same* Tailwind classes (bg-surface, text-ink, text-memory, …) render in
+   whichever scope is active for that subtree.
+
+   Contrast: every text token below clears WCAG AA (4.5:1) against the
+   grounds it actually renders on — canvas, surface, surface-raised and
+   surface-elevated. That includes `ink-faint`, which in the previous light
+   palette shipped deliberately below 3:1; it is used at ~21 sites, nine of
+   them at 10px, so the exemption was not defensible once measured.
+   ========================================================================== */
+:root {
+  --color-canvas: 8 22 27;                 /* #08161B deep teal page ground */
+  --color-surface: 14 32 41;               /* #0E2029 default panel glass */
+  --color-surface-raised: 22 38 47;        /* #16262F lifted surface for dense reading (Evidence, tables, long prose) */
+  --color-surface-elevated: 27 46 56;      /* #1B2E38 toolbar / header strip */
+  --color-linen: 19 34 41;                 /* #132229 recessed input / pill fill */
+  --color-ink: 234 242 245;                /* #EAF2F5 primary text — 15.9:1 on canvas */
+  --color-ink-muted: 157 178 188;          /* #9DB2BC secondary text — 8.4:1 on canvas */
+  --color-ink-faint: 126 148 158;          /* #7E949E tertiary/micro — 5.8:1 on canvas, 4.9:1 on surface-raised */
+  --color-border: 255 255 255;             /* hairlines, used at fixed low alpha */
+  /* Accent hues carried over from the previous dark "instrument" scope, which
+     were already tuned for a near-black ground, then softened slightly where
+     they carry small text: interference and truth were fully saturated
+     (#FF4D4D / #00E5A3) and now sit at a value that holds up at 11px. */
+  --color-memory: 0 210 255;               /* #00D2FF memory / state / O(1) — 10.3:1 */
+  --color-memory-dark: 0 168 204;          /* #00A8CC hover */
+  --color-truth: 52 211 153;               /* #34D399 ground truth / recall — 9.6:1 */
+  --color-interference: 255 107 107;       /* #FF6B6B interference / O(n) — 6.7:1 */
+  --color-synapse: 167 139 250;            /* #A78BFA BDH / synaptic */
+  --color-data: 251 191 36;                /* #FBBF24 precomputed / provenance */
+}
+
+/* One step deeper than the page ground — a recessed well, not a raised panel. */
+.instrument-panel {
+  --color-canvas: 4 13 17;                 /* #040D11 */
+  --color-surface: 9 24 30;                /* #09181E */
+  --color-surface-raised: 15 30 37;        /* #0F1E25 */
+  --color-surface-elevated: 19 35 43;      /* #13232B */
+  --color-linen: 12 26 32;                 /* #0C1A20 */
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
-    background-color: #0B0C0E;
-    color: #F8FAFC;
+    background-color: rgb(var(--color-canvas));
+    color: rgb(var(--color-ink));
     color-scheme: dark;
   }
 
   body {
-    background-color: #0B0C0E;
-    color: #F8FAFC;
+    background-color: rgb(var(--color-canvas));
+    color: rgb(var(--color-ink));
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     overflow-x: hidden;
   }
@@ -29,65 +78,79 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Fraunces', Georgia, serif;
     font-weight: 500;
-    color: #FFFFFF;
+    color: rgb(var(--color-ink));
     letter-spacing: -0.025em;
   }
 
   :focus-visible {
-    outline: 2px solid #00D2FF;
+    outline: 2px solid rgb(var(--color-memory));
     outline-offset: 2px;
   }
 
-  /* Custom dark scrollbar */
+  /* Scrollbar tracks the active palette so it stays legible inside
+     instrument-scoped panels too. */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
   ::-webkit-scrollbar-track {
-    background: #0B0C0E;
+    background: rgb(var(--color-canvas));
   }
   ::-webkit-scrollbar-thumb {
-    background: #1E2330;
+    background: rgb(var(--color-ink) / 0.18);
     border-radius: 4px;
-    border: 2px solid #0B0C0E;
+    border: 2px solid rgb(var(--color-canvas));
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #2D3748;
+    background: rgb(var(--color-ink) / 0.32);
   }
 }
 
-/* KaTeX formula legibility in dark mode */
+/* KaTeX formula legibility — tracks the active palette (paper or instrument). */
 .katex {
-  color: #F1F5F9 !important;
+  color: rgb(var(--color-ink)) !important;
   font-size: 1.05em;
 }
 
-/* Subtle retro-terminal hardware styling with phosphor scanlines */
-.retro-terminal-frame {
-  position: relative;
-  background: #10131A;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 8px 30px rgba(0, 0, 0, 0.5);
+/* Minor prose polish for the long-form modal readers. */
+.prose-editorial {
+  letter-spacing: 0.01em;
+  line-height: 1.7;
 }
 
-.retro-terminal-frame::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
-  background-size: 100% 4px;
-  border-radius: inherit;
+/* Hides the scrollbar on an intentionally-scrollable strip (the Stage
+   panel's scene stepper on narrow viewports) while keeping it scrollable —
+   the row's own chips are the scroll affordance, a visible scrollbar there
+   just adds chrome. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-/* Subtle grid backdrop */
+/* Quiet isometric-circuit substrate — see components/background/. Raised
+   from the previous 0.03 (tuned for dark-ink-on-paper; at 3% light-on-
+   near-black it nearly vanished) so the grid reads as graph-paper texture
+   without competing with the city drawn over it. */
 .bg-grid-pattern {
   background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-image:
+    linear-gradient(to right, rgb(var(--color-ink) / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--color-ink) / 0.06) 1px, transparent 1px);
+}
+
+/* Depth cue for light text over a variable backdrop (Navbar's active-pill
+   label). Shadowed with the page's own dark ground color, not ink — ink is
+   now the light foreground color, so shadowing *with* it would halo light
+   text in more light, the opposite of the separation this exists for. Near-
+   opaque, not a soft 0.15: axe reads this shadow as the outline making the
+   label legible against whatever is blurred behind the glass pill, and a
+   partially-transparent shadow was too light against it even at 0.75. */
+.text-shadow-sm {
+  text-shadow: 0 1px 2px rgb(var(--color-canvas) / 0.95);
+  -webkit-text-stroke: 0.4px rgb(var(--color-canvas) / 0.6);
 }
 
 /* Reduced motion preference */

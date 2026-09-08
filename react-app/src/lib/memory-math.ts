@@ -185,3 +185,138 @@ export function vectorFromText(text: string, dim: number): Vector {
   return randomUnitVector(dim, rng);
 }
 
+/**
+ * Construct a unit vector at an exact angle theta (radians) from a reference
+ * key, via Gram-Schmidt: sample a random vector, orthogonalize it against
+ * kRef to get a unit vector p perpendicular to kRef, then blend
+ * cos(theta)*kRef + sin(theta)*p. At theta=0 this returns (a copy of) kRef;
+ * at theta=pi/2 it returns a vector exactly orthogonal to kRef.
+ *
+ * Powers the orthogonality-angle control: the one slider that drives the
+ * cross-talk term k_i^T k_j directly, rather than sampling it indirectly
+ * through random re-draws.
+ */
+export function makeKeyAtAngle(kRef: Vector, theta: number, rng: () => number = Math.random): Vector {
+  const dim = kRef.length;
+  const raw = randomUnitVector(dim, rng);
+  const proj = vectorDot(raw, kRef); // kRef is unit-norm, so this is raw's component along kRef
+  const perp = new Array(dim);
+  let perpNorm = 0;
+  for (let i = 0; i < dim; i++) {
+    const p = raw[i] - proj * kRef[i];
+    perp[i] = p;
+    perpNorm += p * p;
+  }
+  perpNorm = Math.sqrt(perpNorm);
+  // Degenerate case (raw ended up parallel to kRef): resample by rotating a
+  // basis vector instead of giving up on the angle constraint.
+  if (perpNorm < 1e-9) {
+    for (let i = 0; i < dim; i++) perp[i] = i === 0 ? kRef[1] ?? 0 : i === 1 ? -(kRef[0] ?? 0) : 0;
+    perpNorm = Math.sqrt(perp.reduce((s, x) => s + x * x, 0)) || 1;
+  }
+  const cosT = Math.cos(theta);
+  const sinT = Math.sin(theta);
+  const result = new Array(dim);
+  for (let i = 0; i < dim; i++) {
+    result[i] = cosT * kRef[i] + sinT * (perp[i] / perpNorm);
+  }
+  return result;
+}
+
+/**
+ * Hebbian write with a learning rate and exponential forgetting:
+ *   M <- (1 - lambda) * M + eta * v * k^T
+ * At eta=1, lambda=0 this is exactly writeAssociation. Non-zero lambda decays
+ * every prior association uniformly before the new one is superimposed —
+ * the mechanism behind gated/delta-rule variants (see docs/citations.md:
+ * Gated DeltaNet, Titans) that this app's write-with-decay control exposes.
+ */
+export function writeWithDecay(M: Matrix, k: Vector, v: Vector, eta: number, lambda: number): Matrix {
+  const dim = M.length;
+  const newM = createZeroMatrix(dim);
+  const keep = 1 - lambda;
+  for (let i = 0; i < dim; i++) {
+    for (let j = 0; j < dim; j++) {
+      newM[i][j] = keep * M[i][j] + eta * v[i] * k[j];
+    }
+  }
+  return newM;
+}
+
+/**
+ * Per-write breakdown of a single memory cell M[i][j], given the ordered
+ * list of (key, value) pairs written into it. Returns one contribution per
+ * pair — v_m[i] * k_m[j] — so a cell inspector can show exactly which
+ * writes account for the cell's current value, and in what proportion.
+ */
+export interface CellContribution {
+  index: number;
+  contribution: number;
+}
+
+export function cellContributions(pairs: ReadonlyArray<{ key: Vector; value: Vector }>, i: number, j: number): CellContribution[] {
+  return pairs.map((p, index) => ({ index, contribution: p.value[i] * p.key[j] }));
+}
+
+/**
+ * Seeded random-projection encoding of a small integer grid (an ARC-style
+ * color grid, values 0-9) into a unit vector of length `dim`. Each
+ * (row, col, value) fact scatters a deterministic +/-1 pattern across every
+ * output dimension, and the grid's vector is the normalized sum of every
+ * cell's pattern — a real, reproducible hashing-trick / random-projection
+ * embedding (in the spirit of the Johnson-Lindenstrauss lemma: random +/-1
+ * projections approximately preserve distance), not a learned feature
+ * extractor. Powers the ARC sandbox's illustration of "grid -> vector ->
+ * outer-product write" — never real BDH-CQ inference, which reads token
+ * sequences, not a hashed grid encoding.
+ */
+export function encodeGrid(grid: number[][], dim: number, seed: number): Vector {
+  const v = new Array(dim).fill(0);
+  for (let r = 0; r < grid.length; r++) {
+    const row = grid[r];
+    for (let c = 0; c < row.length; c++) {
+      const cellSeed = (seed ^ Math.imul(r + 1, 73856093) ^ Math.imul(c + 1, 19349663) ^ Math.imul(row[c] + 1, 83492791)) >>> 0;
+      const rng = createRng(cellSeed);
+      for (let i = 0; i < dim; i++) v[i] += rng() < 0.5 ? -1 : 1;
+    }
+  }
+  let norm = 0;
+  for (let i = 0; i < dim; i++) norm += v[i] * v[i];
+  norm = Math.sqrt(norm) || 1;
+  for (let i = 0; i < dim; i++) v[i] /= norm;
+  return v;
+}
+
+export interface GridCandidate {
+  grid: number[][];
+  vector: Vector;
+}
+
+export interface GridDecodeResult {
+  grid: number[][];
+  similarity: number;
+  index: number;
+}
+
+/**
+ * Nearest-neighbour cosine decode: given a readout vector, return whichever
+ * candidate grid's own encoded vector is most similar. This is how the ARC
+ * sandbox turns a continuous v_hat back into a discrete grid — a
+ * classification over known outputs, not a generative decode — a different,
+ * simpler mechanism than real BDH-CQ's, which the sandbox's "illustration"
+ * label exists to keep honest.
+ */
+export function decodeGrid(vhat: Vector, candidates: ReadonlyArray<GridCandidate>): GridDecodeResult | null {
+  if (candidates.length === 0) return null;
+  let bestIndex = 0;
+  let bestSim = -Infinity;
+  candidates.forEach((cand, i) => {
+    const sim = cosineSimilarity(vhat, cand.vector);
+    if (sim > bestSim) {
+      bestSim = sim;
+      bestIndex = i;
+    }
+  });
+  return { grid: candidates[bestIndex].grid, similarity: bestSim, index: bestIndex };
+}
+

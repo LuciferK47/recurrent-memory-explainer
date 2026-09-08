@@ -5,7 +5,7 @@
 
 [![Team Repository](https://img.shields.io/badge/GitHub-LuciferK47%2Frecurrent--memory--explainer-blue?logo=github)](https://github.com/LuciferK47/recurrent-memory-explainer)
 [![Live Explainer](https://img.shields.io/badge/Artifact-Live_Web_App-green)](https://luciferk47.github.io/recurrent-memory-explainer/)
-[![Concept Summary PDF](https://img.shields.io/badge/PDF-One--Page_Concept_Summary-red)](concept_summary.pdf)
+[![Concept Summary PDF](https://img.shields.io/badge/PDF-Concept_Summary-red)](concept_summary.pdf)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -35,44 +35,64 @@ Standard Transformers rely on an unbounded Key–Value (KV) cache scaling linear
 > *Note on Vanilla Prototype*: A standalone vanilla HTML/JS/CSS implementation in the root directory is retained strictly as a legacy reference prototype for low-dependency inspection, but the React build is the definitive submission deliverable.
 
 ```
-Pathway_IITKGP/
+recurrent-memory-explainer/
 ├── react-app/                     # AUTHORITATIVE SUBMISSION ARTIFACT (React 19 + Vite)
 │   ├── src/
-│   │   ├── lib/memory-math.ts     # Pure mathematical substrate (zero DOM dependencies)
-│   │   ├── components/
-│   │   │   ├── Navbar.tsx         # Frosted glass floating navigation pill
-│   │   │   ├── Hero.tsx           # Signature Hebbian synaptic junction visualization
-│   │   │   ├── ProblemComparison.tsx  # Interactive O(n) KV-Cache vs O(1) State comparison
-│   │   │   ├── MemoryLab.tsx      # Live associative matrix heatmap & cosine similarity instrument
-│   │   │   ├── BDHModule.tsx      # Step-by-step visual ARC-style grid demonstration walkthrough
-│   │   │   ├── BreakingPoint.tsx  # Live stress testing & precomputed multi-dim capacity sweep
-│   │   │   ├── EvidencePanel.tsx  # Rigorous claims, independent audits, & comparison matrix
-│   │   │   ├── OpenQuestion.tsx   # Open research frontiers in recurrent memory
-│   │   │   ├── CitationsModal.tsx # In-app rendered markdown & KaTeX citations viewer
-│   │   │   └── Footer.tsx         # Five unambiguous destination links & citations
-│   │   └── index.css              # Custom Departure Mono, Fraunces, and Inter typography tokens
-├── index.html                     # Legacy reference prototype (static vanilla HTML)
-├── js/app.js                      # Legacy prototype script
-├── css/style.css                  # Legacy prototype stylesheet
+│   │   ├── App.tsx                 # App shell: MotionConfig + shared-store provider, lazy modals
+│   │   ├── index.css               # Design tokens, typography, base layer
+│   │   ├── lib/
+│   │   │   ├── memory-math.ts        # Pure mathematical substrate (zero DOM dependencies)
+│   │   │   ├── memory-math-flat.ts   # Float32Array hot-path mirror for the Stage's render loop
+│   │   │   ├── canvas.ts             # Stage-unit coordinate system (STAGE_W/STAGE_H)
+│   │   │   ├── layout.ts             # StageLayout type + MATRIX_TARGET/GRAPH_TARGET/PLOT_TARGET
+│   │   │   ├── colormap.ts           # Diverging heatmap colormap
+│   │   │   └── iso.ts                # Isometric-projection primitives (project/isoBlock/shade)
+│   │   ├── state/                    # memory-store.ts (external store), scene-spec.ts (Stage scenes)
+│   │   ├── hooks/                    # useScrollScene, useRafLoop, useStageSurface, usePrefersReducedMotion
+│   │   ├── stage/                    # The pinned scrollytelling instrument
+│   │   │   ├── Stage.tsx               # Render loop, cell inspector, magnifying loupe, scene stepper
+│   │   │   ├── StageOverlay.tsx        # SVG legends, axis ticks, colorbar
+│   │   │   ├── scenes/                 # kv-cache / write / synapse / cliff layoutFor(p)
+│   │   │   └── render/                 # draw-matrix, draw-graph, draw-plot, draw-loupe, ...
+│   │   └── components/
+│   │       ├── Navbar.tsx              # Floating nav pill + scroll-progress bar
+│   │       ├── Hero.tsx                # Signature Hebbian synaptic junction visualization
+│   │       ├── ScaleFreeBackground.tsx # Isometric circuit-city background (+ background/ subdir)
+│   │       ├── MemoryLab.tsx           # Live associative matrix ledger, sandboxes, θ-angle control
+│   │       ├── BDHModule.tsx           # BDH walkthrough + ArcSandbox.tsx (playable ARC sandbox)
+│   │       ├── BreakingPoint.tsx       # Precomputed multi-dimensional capacity sweep chart
+│   │       ├── CheckUnderstanding.tsx  # Interactive self-check with a tri-state right/wrong verdict
+│   │       ├── EvidencePanel.tsx       # Claims audit & architecture comparison table
+│   │       ├── OpenQuestion.tsx        # Open research frontiers
+│   │       ├── CitationsModal.tsx / ReadmeModal.tsx  # Lazy-loaded document viewers
+│   │       ├── WriteAnnouncer.tsx      # One aria-live region for every write/clear on the page
+│   │       ├── illustrations/          # Isometric spot-icon suite (section anchors)
+│   │       └── ui/                     # Panel, Badge, Button, SectionHeader, Reveal, GlassIcon, EquationTerm
+├── index.html, js/, css/          # Legacy reference prototype (static vanilla HTML) — not the submission artifact
+├── data/                          # interference_sweep.json, bdh_cq_demo_tasks.json — both self-labeled with provenance
+├── scripts/                       # precompute_interference.py, precompute_bdh_demo.py, generate_readme_html.py
 ├── docs/
 │   ├── citations.md               # Primary literature catalog (Group A & Group B)
 │   ├── citations.html             # Pre-rendered standalone citations viewer with KaTeX
-│   ├── concept_summary.md         # 1-page technical concept summary
+│   ├── concept_summary.md         # Concept summary source (~850 words)
 │   ├── concept_summary.html       # Print stylesheet for PDF rendering
+│   ├── readme.html                # Pre-rendered standalone README viewer
 │   └── fact_sheet.md              # Immutable factual source of truth
-└── concept_summary.pdf            # Compiled 1-page PDF briefing
+├── ATTRIBUTIONS.md                # Full third-party code/font/data/license record
+├── requirements.txt               # Python deps (numpy) for scripts/
+└── concept_summary.pdf            # Compiled concept summary PDF
 ```
 
 ### Component Evidence Ledger (Live vs. Precomputed vs. Synthetic)
 
 | Module / Component | Mechanism | Category | Technical Description |
 | :--- | :--- | :--- | :--- |
-| **Memory Lab (02)** | Matrix Heatmap & Cosine Readout | **Live Substrate** | 100% computed live in-browser via pure math module (`memory-math.ts`). Exact outer products and dot products. |
-| **Breaking Point (04) Live Flood** | Stress Test Chart | **Live Substrate** | Real-time simulation plotting degradation curve as random vectors flood the live state. |
+| **Stage — write scene (02)** | Matrix Heatmap & Cosine Readout | **Live Substrate** | 100% computed live in-browser via pure math module (`memory-math.ts`). Exact outer products and dot products; hover/arrow-key any cell for a per-write contribution breakdown via the magnifying loupe. |
+| **Stage — cliff scene (04)** | Live Flood + Precomputed Reference Band | **Live Substrate + Precomputed** | The solid trace is a real-time simulation plotting degradation as writes land in the live shared store; the dashed band beneath it is the precomputed sweep below, kept visually distinct per the evidence-discipline rule in `docs/fact_sheet.md`. |
 | **Interference Sweep (04)** | Multi-D Capacity Curves | **Precomputed** | Monte Carlo sweeps across $d \in \{4, 8, 16, 32, 64\}$ generated by `scripts/precompute_interference.py` (20 trials/pt). |
-| **BDH-CQ Walkthrough (03)** | ARC Grid Demonstrations | **Synthetic / Didactic** | Handcrafted, original visual grid tasks illustrating demonstration absorption without gradient updates. |
+| **BDH-CQ Walkthrough (03)** | ARC Grid Demonstrations | **Synthetic / Didactic** | Original visual grid tasks (not ARC-AGI data — see `ATTRIBUTIONS.md`) illustrating demonstration absorption without gradient updates; always labelled "illustration" in-app. |
 | **Hero Diagram** | Synaptic Junction Animation | **Animated Model** | Live reactive vector field demonstrating outer-product alignment between keys and values. |
-| **29.5% ARC-AGI-1 Metric** | Benchmark Badge | **Self-Reported** | Reported by Kosowski et al. (arXiv:2608.09888); self-reported benchmark with a partially-independent audit. |
+| **29.5% ARC-AGI-1 Metric** | Benchmark Badge | **Self-Reported** | Reported by Engdahl et al. (arXiv:2608.09888); self-reported benchmark with a partially-independent audit. |
 
 ---
 
@@ -84,7 +104,7 @@ Pathway_IITKGP/
 # Navigate to the react-app directory
 cd react-app
 
-# Dependencies are already installed; to reinstall or update:
+# Install dependencies (node_modules/ is not checked in)
 npm install
 
 # Start the Vite development server
@@ -107,11 +127,25 @@ python3 -m http.server 8080
 ### Precomputing Sweeps (Optional Python Reproduction)
 
 ```bash
-# Generate the multi-dimensional capacity degradation data
+# From the repository root — install the one Python dependency (NumPy)
+pip install -r requirements.txt
+
+# Generate the multi-dimensional capacity degradation data -> data/interference_sweep.json
 python3 scripts/precompute_interference.py
 
-# Generate the toy ARC-style demonstration states
+# Generate the toy ARC-style demonstration states -> data/bdh_cq_demo_tasks.json
 python3 scripts/precompute_bdh_demo.py
+```
+
+Both scripts write to `data/`; the copies under `react-app/public/data/` that the
+live app actually fetches are mirrored by hand and won't update automatically —
+re-copy them after regenerating.
+
+`scripts/generate_readme_html.py` (stdlib-only, no install needed) regenerates
+`docs/readme.html` and `react-app/public/readme.html` from this file:
+
+```bash
+python3 scripts/generate_readme_html.py
 ```
 
 ---
@@ -145,7 +179,9 @@ Full annotations and paper summaries are available in [docs/citations.md](docs/c
 ### Licenses & Asset Attributions
 - **Source Code:** [MIT License](LICENSE) &copy; 2026 Team DataForge &times; Pathway Track.
 - **Typography:**
-  - *Departure Mono*: SIL Open Font License 1.1 (Helena Zhang)
+  - *Departure Mono* (self-hosted, `react-app/public/fonts/`): SIL Open Font License 1.1 (Helena Zhang) — full license text shipped as `OFL.txt` alongside the font file.
   - *Inter*: SIL Open Font License 1.1 (Rasmus Andersson)
   - *Fraunces*: SIL Open Font License 1.1 (Undercase Type)
+  - *JetBrains Mono*: SIL Open Font License 1.1 (JetBrains)
 - **Math Engine:** KaTeX: MIT License (Khan Academy).
+- **Full record:** code dependencies (React, motion, lucide-react, Tailwind, NumPy, ...), data-file provenance, and original-graphics attribution are all in **[`ATTRIBUTIONS.md`](ATTRIBUTIONS.md)**.

@@ -1,46 +1,28 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { MotionConfig } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ScaleFreeBackground } from './components/ScaleFreeBackground';
-import { ProblemComparison } from './components/ProblemComparison';
-import { MemoryLab, StoredPair } from './components/MemoryLab';
-import { BDHModule } from './components/BDHModule';
-import { BreakingPoint } from './components/BreakingPoint';
+import { Stage } from './stage/Stage';
 import { CheckUnderstanding } from './components/CheckUnderstanding';
 import { EvidencePanel } from './components/EvidencePanel';
 import { OpenQuestion } from './components/OpenQuestion';
 import { Footer } from './components/Footer';
-import { CitationsModal } from './components/CitationsModal';
-import { ReadmeModal } from './components/ReadmeModal';
-import {
-  Matrix,
-  Vector,
-  createZeroMatrix,
-  writeAssociation,
-  randomUnitVector,
-  createRng,
-} from './lib/memory-math';
+import { WriteAnnouncer } from './components/WriteAnnouncer';
+import { MemoryStoreProvider, useMemoryStore } from './state/memory-store';
+import { randomUnitVector, createRng } from './lib/memory-math';
+import { PRESET_LABELS } from './lib/preset-labels';
 
-const PRESET_LABELS = [
-  'cat → furry',
-  'sky → blue',
-  'sun → warm',
-  'rain → wet',
-  'code → logic',
-  'math → proof',
-  'music → rhythm',
-  'tree → green',
-  'fire → hot',
-  'ice → cold',
-  'book → words',
-  'star → bright',
-];
+// Both modals are documentation viewers behind an explicit click (footer
+// links, or a #citations/#readme deep link) — never needed for the initial
+// render, so their code (plus each modal's own iframe-shell markup) only
+// downloads once a reader actually opens one.
+const CitationsModal = lazy(() => import('./components/CitationsModal').then(m => ({ default: m.CitationsModal })));
+const ReadmeModal = lazy(() => import('./components/ReadmeModal').then(m => ({ default: m.ReadmeModal })));
+
+const REVEAL_COUNT = 4;
 
 export const App: React.FC = () => {
-  const [dim, setDim] = useState<number>(8);
-  const [matrix, setMatrix] = useState<Matrix>(() => createZeroMatrix(8));
-  const [pairs, setPairs] = useState<StoredPair[]>([]);
-  const [pairCounter, setPairCounter] = useState<number>(0);
   const [showCitations, setShowCitations] = useState<boolean>(() => {
     return typeof window !== 'undefined' && window.location.hash === '#citations';
   });
@@ -62,167 +44,103 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Staged hero-load reveal of the preset populating into the matrix, played once
+  return (
+    // reducedMotion="user": CSS prefers-reduced-motion (index.css's blanket
+    // animation-duration override) only touches CSS @keyframes/transitions —
+    // it cannot reach motion/* components, which drive values via rAF/WAAPI
+    // instead. This is the app-wide equivalent for every motion.* animation,
+    // Hero's repeat: Infinity pulses included; MotionConfig snaps transform-
+    // based animations (scale, x, y) to their end state automatically. Its
+    // opacity-only loops still need an explicit check (see Hero.tsx) since
+    // reduced-motion mode deliberately leaves plain fades alone.
+    <MotionConfig reducedMotion="user">
+      <MemoryStoreProvider initialDim={8}>
+        <div className="min-h-screen bg-canvas text-ink flex flex-col selection:bg-memory/20 relative">
+          <ScaleFreeBackground />
+          <Navbar />
+
+          <main className="flex-1 relative z-10">
+            <Hero />
+            <Stage />
+            <section className="py-6">
+              <div className="max-w-5xl mx-auto px-4 sm:px-6">
+                <CheckUnderstanding />
+              </div>
+            </section>
+            <EvidencePanel />
+            <OpenQuestion />
+          </main>
+
+          <Footer
+            onOpenCitations={() => setShowCitations(true)}
+            onOpenReadme={() => setShowReadme(true)}
+          />
+          {/* Gated on the open flag, not just `isOpen`, so the lazy import()
+              only fires the first time a reader actually opens one — an
+              always-mounted-but-hidden lazy component would kick off its
+              chunk download on first paint regardless. */}
+          <Suspense
+            fallback={
+              <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                <span className="text-ink-muted text-sm font-mono">Loading…</span>
+              </div>
+            }
+          >
+            {showCitations && (
+              <CitationsModal
+                isOpen
+                onClose={() => {
+                  setShowCitations(false);
+                  if (window.location.hash === '#citations') {
+                    history.replaceState(null, '', window.location.pathname + window.location.search);
+                  }
+                }}
+              />
+            )}
+            {showReadme && (
+              <ReadmeModal
+                isOpen
+                onClose={() => {
+                  setShowReadme(false);
+                  if (window.location.hash === '#readme') {
+                    history.replaceState(null, '', window.location.pathname + window.location.search);
+                  }
+                }}
+              />
+            )}
+          </Suspense>
+          <HeroReveal />
+          <WriteAnnouncer />
+        </div>
+      </MemoryStoreProvider>
+    </MotionConfig>
+  );
+};
+
+/**
+ * Staged hero-load reveal: populates the store with a few preset pairs on
+ * mount so the page opens with the matrix already alive, never a blank
+ * canvas. Renders nothing — it only needs `useMemoryStore()`, which requires
+ * being inside `<MemoryStoreProvider>`, hence the separate component.
+ */
+const HeroReveal: React.FC = () => {
+  const store = useMemoryStore();
+
   useEffect(() => {
     const rng = createRng(42);
-    let curM = createZeroMatrix(8);
     const timeouts: ReturnType<typeof setTimeout>[] = [];
-
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < REVEAL_COUNT; i++) {
       const t = setTimeout(() => {
         const k = randomUnitVector(8, rng);
         const v = randomUnitVector(8, rng);
-        curM = writeAssociation(curM, k, v);
-        setMatrix([...curM.map(row => [...row])]);
-        setPairs(prev => [
-          ...prev,
-          {
-            id: `preset-${i}`,
-            key: k,
-            value: v,
-            label: PRESET_LABELS[i],
-          },
-        ]);
-        setPairCounter(i + 1);
+        store.addPair(k, v, PRESET_LABELS[i]);
       }, i * 140);
       timeouts.push(t);
     }
-
-    return () => {
-      timeouts.forEach(clearTimeout);
-    };
+    return () => timeouts.forEach(clearTimeout);
+    // Runs once on mount against the store instance this Provider created.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Handle Dimension Change in Memory Lab
-  const handleDimChange = useCallback((newDim: number) => {
-    setDim(newDim);
-    setMatrix(createZeroMatrix(newDim));
-    setPairs([]);
-    setPairCounter(0);
-  }, []);
-
-  // Add 1 Random Pair
-  const handleAddPair = useCallback(() => {
-    const k = randomUnitVector(dim);
-    const v = randomUnitVector(dim);
-    const label = PRESET_LABELS[pairCounter % PRESET_LABELS.length] || `Pair ${pairCounter + 1}`;
-    const newM = writeAssociation(matrix, k, v);
-
-    setMatrix(newM);
-    setPairs(prev => [
-      ...prev,
-      {
-        id: `pair-${Date.now()}-${Math.random()}`,
-        key: k,
-        value: v,
-        label,
-      },
-    ]);
-    setPairCounter(prev => prev + 1);
-  }, [dim, matrix, pairCounter]);
-
-  // Add 5 Random Pairs
-  const handleAddFive = useCallback(() => {
-    let curM = matrix;
-    const newPairs: StoredPair[] = [];
-    let counter = pairCounter;
-
-    for (let i = 0; i < 5; i++) {
-      const k = randomUnitVector(dim);
-      const v = randomUnitVector(dim);
-      const label = PRESET_LABELS[counter % PRESET_LABELS.length] || `Pair ${counter + 1}`;
-      curM = writeAssociation(curM, k, v);
-      newPairs.push({
-        id: `pair-${Date.now()}-${i}`,
-        key: k,
-        value: v,
-        label,
-      });
-      counter++;
-    }
-
-    setMatrix(curM);
-    setPairs(prev => [...prev, ...newPairs]);
-    setPairCounter(counter);
-  }, [dim, matrix, pairCounter]);
-
-  // Clear Memory
-  const handleClear = useCallback(() => {
-    setMatrix(createZeroMatrix(dim));
-    setPairs([]);
-    setPairCounter(0);
-  }, [dim]);
-
-  // Add Custom Key-Value Pair
-  const handleAddCustomPair = useCallback(
-    (k: Vector, v: Vector, label: string) => {
-      const newM = writeAssociation(matrix, k, v);
-      setMatrix(newM);
-      setPairs(prev => [
-        ...prev,
-        {
-          id: `custom-${Date.now()}-${Math.random()}`,
-          key: k,
-          value: v,
-          label,
-        },
-      ]);
-      setPairCounter(prev => prev + 1);
-    },
-    [matrix]
-  );
-
-  return (
-    <div className="min-h-screen bg-canvas text-ink flex flex-col selection:bg-memory/20 relative">
-      <ScaleFreeBackground />
-      <Navbar />
-
-      <main className="flex-1 relative z-10">
-        <Hero storedCount={pairs.length} dim={dim} />
-        <ProblemComparison />
-        <MemoryLab
-          dim={dim}
-          setDim={handleDimChange}
-          pairs={pairs}
-          matrix={matrix}
-          onAddPair={handleAddPair}
-          onAddFive={handleAddFive}
-          onClear={handleClear}
-          onAddCustomPair={handleAddCustomPair}
-        />
-        <BDHModule />
-        <BreakingPoint />
-        <section className="py-6">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6">
-            <CheckUnderstanding />
-          </div>
-        </section>
-        <EvidencePanel />
-        <OpenQuestion />
-      </main>
-
-      <Footer
-        onOpenCitations={() => setShowCitations(true)}
-        onOpenReadme={() => setShowReadme(true)}
-      />
-      <CitationsModal
-        isOpen={showCitations}
-        onClose={() => {
-          setShowCitations(false);
-          if (window.location.hash === '#citations') {
-            history.replaceState(null, '', window.location.pathname + window.location.search);
-          }
-        }}
-      />
-      <ReadmeModal
-        isOpen={showReadme}
-        onClose={() => {
-          setShowReadme(false);
-          if (window.location.hash === '#readme') {
-            history.replaceState(null, '', window.location.pathname + window.location.search);
-          }
-        }}
-      />
-    </div>
-  );
+  return null;
 };

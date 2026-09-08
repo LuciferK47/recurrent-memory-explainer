@@ -1,114 +1,155 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useScroll, useTransform } from 'motion/react';
+import { useMemoryStore } from '../state/memory-store';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
+import { IsoCity, type CityEvent } from './background/IsoCity';
+import { generateCityData } from './background/city-data';
+import { INK, MEMORY, TRUTH, SYNAPSE, DATA, hex } from '../stage/render/theme';
 
 /**
- * ScaleFreeBackground — Static subtle background texture representing
- * the scale-free, heavy-tailed synaptic network graph described in the BDH paper.
- * Kept at 3.5%–4.5% opacity so it reads as paper grain/watermark, preserving 100% text legibility.
+ * The page's background: a full-bleed dark isometric circuit-city (server
+ * racks, a CPU block, board traces, a small key→value net board, pixel
+ * figures — see components/background/) over a heavily blurred plate of the
+ * original reference photo, matching that reference's own composition
+ * directly rather than confining the city to thin page margins under a
+ * text-protecting mask. The previous light-palette version needed that
+ * mask because it had to coexist with dark-on-light body text; now that the
+ * whole page (including every card — see ui/Panel.tsx) is dark, panels
+ * carry their own opaque-enough glass fill to stay legible over a dense
+ * background, so the scene can run at real strength everywhere.
+ *
+ * The reference photo is never shipped at legible resolution or sharpness —
+ * see public/bg-plate.webp's generation note below — only as an atmospheric
+ * colour wash; the crisp city on top is entirely coded (components/background/).
+ *
+ * Live-coupled to the shared memory store: a real write sends a glow
+ * traveling along a board trace into the CPU block, with a matching flash
+ * on one server-rack cell, so the background reads as part of the
+ * instrument rather than decoration (see IsoCity's CpuWritePulse).
  */
+
+const PALETTE = {
+  // Dedicated dark building material — not the theme's `ink` (now light
+  // text), see IsoCity.tsx's Palette doc comment for why that distinction
+  // matters post dark-flip.
+  structure: '#16262F',
+  ink: hex(INK),
+  memory: hex(MEMORY),
+  truth: hex(TRUTH),
+  synapse: hex(SYNAPSE),
+  data: hex(DATA),
+};
+
+const MAX_CONCURRENT_EVENTS = 3;
+const EVENT_LIFETIME_MS = 1400;
+
+// A single 200x200 fractal-noise tile, tiled across the page — the classic
+// "expensive site" film-grain texture. One inline data: URI, generated
+// once; no per-frame cost, no network request.
+const GRAIN_SVG =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E";
+
 export const ScaleFreeBackground: React.FC = () => {
+  const store = useMemoryStore();
+  const reducedMotion = usePrefersReducedMotion();
+  const { scrollY } = useScroll();
+  const yFar = useTransform(scrollY, v => v * 0.02);
+  const yMid = useTransform(scrollY, v => v * 0.05);
+  const yNear = useTransform(scrollY, v => v * 0.09);
+
+  const cityData = useMemo(() => generateCityData(), []);
+
+  const [events, setEvents] = useState<CityEvent[]>([]);
+  const eventIdRef = useRef(0);
+  const prevLenRef = useRef(0);
+
+  useEffect(() => {
+    prevLenRef.current = store.getSnapshot().pairs.length;
+    if (reducedMotion) return;
+    return store.subscribe(() => {
+      const snap = store.getSnapshot();
+      if (snap.pairs.length > prevLenRef.current) {
+        const id = eventIdRef.current++;
+        setEvents(prev => [...prev.slice(-(MAX_CONCURRENT_EVENTS - 1)), { id }]);
+        window.setTimeout(() => setEvents(prev => prev.filter(e => e.id !== id)), EVENT_LIFETIME_MS);
+      }
+      prevLenRef.current = snap.pairs.length;
+    });
+  }, [store, reducedMotion]);
+
   return (
-    <div
-      aria-hidden="true"
-      className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-[0.14] select-none"
-    >
-      <svg
-        className="w-full h-full"
-        xmlns="http://www.w3.org/2000/svg"
-        preserveAspectRatio="xMidYMid slice"
-        viewBox="0 0 1440 900"
-      >
-        <g stroke="#00D2FF" strokeWidth="1">
-          {/* Major Hub 1 (Top Left) */}
-          <line x1="220" y1="180" x2="380" y2="120" />
-          <line x1="220" y1="180" x2="140" y2="310" />
-          <line x1="220" y1="180" x2="310" y2="280" />
-          <line x1="220" y1="180" x2="90" y2="140" />
-          <line x1="220" y1="180" x2="260" y2="60" />
-          <line x1="220" y1="180" x2="480" y2="220" />
+    <div aria-hidden="true" className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-canvas">
+      {/* Layer 1: the blurred reference plate — atmospheric colour only.
+          public/bg-plate.webp is generated from the reference photo via:
+            magick ref.jpeg -resize 640x -modulate 55,70,100 -blur 0x28
+                   -fill "#08161B" -colorize 25% -quality 78 bg-plate.webp
+          The heavy blur (a) destroys legibility of the source image's own
+          baked-in text entirely and (b) means the source's modest
+          resolution never matters — a blurred plate needs no resolution. */}
+      <img
+        src={`${import.meta.env.BASE_URL}bg-plate.webp`}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover opacity-70"
+      />
 
-          {/* Sub-cluster from Hub 1 */}
-          <line x1="310" y1="280" x2="480" y2="220" />
-          <line x1="140" y1="310" x2="240" y2="420" />
-          <line x1="310" y1="280" x2="390" y2="390" />
-          <line x1="380" y1="120" x2="520" y2="110" />
+      {/* Layer 2: aurora — 3 large soft glows on a slow independent drift,
+          pure CSS so they cost nothing per frame. Static under reduced
+          motion (the animation-name is simply never applied). */}
+      <div className="absolute inset-0">
+        <div
+          className={`absolute -top-[10%] -left-[10%] w-[55vw] h-[55vw] rounded-full opacity-40 ${
+            reducedMotion ? '' : 'animate-aurora-a'
+          }`}
+          style={{ background: 'radial-gradient(circle, rgba(0,210,255,0.35), transparent 65%)', filter: 'blur(80px)' }}
+        />
+        <div
+          className={`absolute top-[20%] -right-[15%] w-[50vw] h-[50vw] rounded-full opacity-35 ${
+            reducedMotion ? '' : 'animate-aurora-b'
+          }`}
+          style={{ background: 'radial-gradient(circle, rgba(167,139,250,0.32), transparent 65%)', filter: 'blur(90px)' }}
+        />
+        <div
+          className={`absolute bottom-[-15%] left-[25%] w-[45vw] h-[45vw] rounded-full opacity-30 ${
+            reducedMotion ? '' : 'animate-aurora-c'
+          }`}
+          style={{ background: 'radial-gradient(circle, rgba(52,211,153,0.28), transparent 65%)', filter: 'blur(85px)' }}
+        />
+      </div>
 
-          {/* Major Hub 2 (Center-Right) */}
-          <line x1="980" y1="260" x2="840" y2="190" />
-          <line x1="980" y1="260" x2="1120" y2="180" />
-          <line x1="980" y1="260" x2="1060" y2="380" />
-          <line x1="980" y1="260" x2="890" y2="340" />
-          <line x1="980" y1="260" x2="930" y2="110" />
-          <line x1="980" y1="260" x2="1200" y2="290" />
-          <line x1="980" y1="260" x2="780" y2="270" />
+      {/* Layer 3: fine technical grid. */}
+      <div className="absolute inset-0 bg-grid-pattern" />
 
-          {/* Sub-cluster from Hub 2 */}
-          <line x1="840" y1="190" x2="710" y2="160" />
-          <line x1="1120" y1="180" x2="1260" y2="140" />
-          <line x1="1060" y1="380" x2="1180" y2="460" />
-          <line x1="890" y1="340" x2="790" y2="450" />
+      {/* Layer 4: the coded city — full-bleed and dense, the actual subject
+          of the reference rather than a marginal accent. No text-column
+          mask: dark panels over a dark scene stay legible on their own
+          opacity, the way the reference's own glass cards do. */}
+      <IsoCity
+        palette={PALETTE}
+        cityData={cityData}
+        events={events}
+        reducedMotion={reducedMotion}
+        yFar={yFar}
+        yMid={yMid}
+        yNear={yNear}
+      />
 
-          {/* Long-range Sparse Highway (Small-World Property) */}
-          <line x1="480" y1="220" x2="710" y2="160" strokeDasharray="6 4" />
-          <line x1="390" y1="390" x2="780" y2="270" strokeDasharray="6 4" />
+      {/* Layer 5: film grain — a static tiled fractal-noise texture, the
+          single biggest "expensive site" tell on both reference sites. */}
+      <div
+        className="absolute inset-0 opacity-[0.05] mix-blend-overlay"
+        style={{ backgroundImage: `url("${GRAIN_SVG}")`, backgroundSize: '200px 200px' }}
+      />
 
-          {/* Major Hub 3 (Bottom Center-Left) */}
-          <line x1="560" y1="620" x2="440" y2="540" />
-          <line x1="560" y1="620" x2="680" y2="560" />
-          <line x1="560" y1="620" x2="520" y2="760" />
-          <line x1="560" y1="620" x2="660" y2="720" />
-          <line x1="560" y1="620" x2="390" y2="690" />
-          <line x1="560" y1="620" x2="790" y2="450" />
-
-          {/* Hub 4 (Bottom Right) */}
-          <line x1="1140" y1="710" x2="1030" y2="640" />
-          <line x1="1140" y1="710" x2="1280" y2="670" />
-          <line x1="1140" y1="710" x2="1180" y2="820" />
-          <line x1="1140" y1="710" x2="1040" y2="790" />
-          <line x1="1140" y1="710" x2="1180" y2="460" />
-        </g>
-
-        {/* Nodes */}
-        <g fill="#00D2FF">
-          {/* Major Hubs (Larger degree) */}
-          <circle cx="220" cy="180" r="7" />
-          <circle cx="980" cy="260" r="8" />
-          <circle cx="560" cy="620" r="7.5" />
-          <circle cx="1140" cy="710" r="7" />
-
-          {/* Secondary Nodes */}
-          <circle cx="380" cy="120" r="4.5" />
-          <circle cx="140" cy="310" r="4" />
-          <circle cx="310" cy="280" r="5" />
-          <circle cx="480" cy="220" r="4.5" />
-          <circle cx="840" cy="190" r="5" />
-          <circle cx="1120" cy="180" r="4.5" />
-          <circle cx="1060" cy="380" r="5" />
-          <circle cx="890" cy="340" r="4.5" />
-          <circle cx="710" cy="160" r="4" />
-          <circle cx="780" cy="270" r="4" />
-          <circle cx="680" cy="560" r="4.5" />
-          <circle cx="790" cy="450" r="4" />
-
-          {/* Peripheral / Leaf Nodes (Degree 1-2) */}
-          <circle cx="90" cy="140" r="2.5" />
-          <circle cx="260" cy="60" r="2.5" />
-          <circle cx="520" cy="110" r="2.5" />
-          <circle cx="240" cy="420" r="3" />
-          <circle cx="390" cy="390" r="3" />
-          <circle cx="930" cy="110" r="2.5" />
-          <circle cx="1200" cy="290" r="3" />
-          <circle cx="1260" cy="140" r="2.5" />
-          <circle cx="1180" cy="460" r="3" />
-          <circle cx="440" cy="540" r="3" />
-          <circle cx="520" cy="760" r="2.5" />
-          <circle cx="660" cy="720" r="3" />
-          <circle cx="390" cy="690" r="2.5" />
-          <circle cx="1030" cy="640" r="3" />
-          <circle cx="1280" cy="670" r="2.5" />
-          <circle cx="1180" cy="820" r="2.5" />
-          <circle cx="1040" cy="790" r="2.5" />
-        </g>
-      </svg>
+      {/* Layer 6: a gentle top/bottom vignette so the field settles under
+          the fixed navbar and above the footer rather than cutting hard. */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(to bottom, rgb(var(--color-canvas) / 0.65) 0%, transparent 12%, transparent 88%, rgb(var(--color-canvas) / 0.5) 100%)',
+        }}
+      />
     </div>
   );
 };

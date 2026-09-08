@@ -1,0 +1,12 @@
+# Python dependencies for scripts/*.py (the precomputation pipeline that
+# generates data/interference_sweep.json and data/bdh_cq_demo_tasks.json —
+# see README.md's reproduction instructions).
+#
+#   pip install -r requirements.txt
+#   python3 scripts/precompute_interference.py
+#   python3 scripts/precompute_bdh_demo.py
+#
+# scripts/generate_readme_html.py uses only the Python standard library
+# (json, re, os) and needs nothing from this file.
+
+numpy>=1.24

@@ -19,7 +19,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenCitations, onOpenReadme })
             href="https://github.com/LuciferK47/recurrent-memory-explainer"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-ink hover:text-memory underline font-medium transition-colors"
+            className="text-ink hover:text-memory underline font-medium transition-colors inline-block py-1.5"
           >
             View Source (Team Repo)
           </a>
@@ -32,7 +32,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenCitations, onOpenReadme })
                 onOpenReadme();
               }
             }}
-            className="text-ink hover:text-memory underline font-medium transition-colors"
+            className="text-ink hover:text-memory underline font-medium transition-colors inline-block py-1.5"
           >
             README
           </a>
@@ -45,7 +45,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenCitations, onOpenReadme })
                 onOpenCitations();
               }
             }}
-            className="text-ink hover:text-memory underline font-medium transition-colors"
+            className="text-ink hover:text-memory underline font-medium transition-colors inline-block py-1.5"
           >
             Citations
           </a>
@@ -54,7 +54,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenCitations, onOpenReadme })
             href={`${baseUrl}concept_summary.pdf`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-ink-muted hover:text-memory underline transition-colors"
+            className="text-ink-muted hover:text-memory underline transition-colors inline-block py-1.5"
           >
             Concept Summary (PDF)
           </a>
@@ -63,7 +63,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenCitations, onOpenReadme })
             href="https://github.com/pathwaycom/bdh"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-ink-muted hover:text-memory underline transition-colors"
+            className="text-ink-muted hover:text-memory underline transition-colors inline-block py-1.5"
           >
             Pathway's Reference Implementation (BDH)
           </a>
@@ -71,19 +71,19 @@ export const Footer: React.FC<FooterProps> = ({ onOpenCitations, onOpenReadme })
         </p>
         <p className="text-xs text-ink-muted m-0">
           Primary sources:{' '}
-          <a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noopener noreferrer" className="hover:text-memory underline">
+          <a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noopener noreferrer" className="text-memory hover:text-memory-dark underline inline-block py-1.5">
             arXiv:2509.26507
           </a>{' '}
           (BDH) &middot;{' '}
-          <a href="https://arxiv.org/abs/2608.09888" target="_blank" rel="noopener noreferrer" className="hover:text-memory underline">
+          <a href="https://arxiv.org/abs/2608.09888" target="_blank" rel="noopener noreferrer" className="text-memory hover:text-memory-dark underline inline-block py-1.5">
             arXiv:2608.09888
           </a>{' '}
           (BDH-CQ) &middot;{' '}
-          <a href="https://arxiv.org/abs/2404.07143" target="_blank" rel="noopener noreferrer" className="hover:text-memory underline">
+          <a href="https://arxiv.org/abs/2404.07143" target="_blank" rel="noopener noreferrer" className="text-memory hover:text-memory-dark underline inline-block py-1.5">
             arXiv:2404.07143
           </a>{' '}
           (Infini-attention) &middot;{' '}
-          <a href="https://arxiv.org/abs/2501.00663" target="_blank" rel="noopener noreferrer" className="hover:text-memory underline">
+          <a href="https://arxiv.org/abs/2501.00663" target="_blank" rel="noopener noreferrer" className="text-memory hover:text-memory-dark underline inline-block py-1.5">
             arXiv:2501.00663
           </a>{' '}
           (Titans)

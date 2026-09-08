@@ -115,13 +115,13 @@
 <h1>In-Context Learning with Recurrent Memory: State, Capacity, and Interference</h1>
 <div class="header-meta">
   <div><strong>DataForge 2026 × Pathway Track</strong> | Authoritative Concept Briefing</div>
-  <div>Team Public Repo: <code>github.com/LuciferK47/recurrent-memory-explainer</code></div>
+  <div>Live Explainer: <code>luciferk47.github.io/recurrent-memory-explainer</code> &middot; Source: <code>github.com/LuciferK47/recurrent-memory-explainer</code></div>
   <div>Core Papers: arXiv:2509.26507 &middot; arXiv:2608.09888</div>
 </div>
 
 <h2>1. Executive Summary &amp; Locked Claim</h2>
 <p>
-Autoregressive Transformers enable in-context learning via an explicit key&ndash;value (KV) cache scaling linearly with sequence length ($O(n)$ memory footprint per sequence), creating massive memory bandwidth and VRAM constraints. Fixed-size recurrent memory replaces unbounded buffers with a state matrix $M \in \mathbb{R}^{d \times d}$, achieving strictly $O(1)$ memory complexity during inference.
+Autoregressive Transformers enable in-context learning via an explicit key&ndash;value (KV) cache scaling linearly with sequence length (<code>O(n)</code> memory footprint per sequence), creating massive memory bandwidth and VRAM constraints. Fixed-size recurrent memory replaces unbounded buffers with a state matrix <em>M &isin; R<sup>d &times; d</sup></em>, achieving strictly <code>O(1)</code> memory complexity during inference.
 </p>
 <blockquote>
 <strong>Locked Claim:</strong> &ldquo;A fixed-size recurrent memory can absorb key&ndash;value associations from demonstrations and recall them accurately &mdash; until the number of associations exceeds the memory's rank, at which point recall degrades through interference in a predictable, measurable way.&rdquo;
@@ -136,7 +136,7 @@ Autoregressive Transformers enable in-context learning via an explicit key&ndash
       <strong>2. Linear Readout:</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;v&#770; = M &middot; q = &sum;<sub>i=1..N</sub> v<sub>i</sub> (k<sub>i</sub><sup>T</sup> q)
     </div>
     <p>
-      For query $q = k_j$, readout decomposes into signal and cross-talk:
+      For query <em>q = k<sub>j</sub></em>, readout decomposes into signal and cross-talk:
       <br><code>v&#770; = v<sub>j</sub> (k<sub>j</sub><sup>T</sup> k<sub>j</sub>) + &sum;<sub>i &ne; j</sub> v<sub>i</sub> (k<sub>i</sub><sup>T</sup> k<sub>j</sub>) = v<sub>j</sub> + &sum;<sub>i &ne; j</sub> v<sub>i</sub> (k<sub>i</sub><sup>T</sup> k<sub>j</sub>)</code>.
       If keys are mutually orthogonal (<code>k<sub>i</sub><sup>T</sup> k<sub>j</sub> = 0</code>), retrieval is exact.
     </p>
@@ -144,12 +144,12 @@ Autoregressive Transformers enable in-context learning via an explicit key&ndash
   <div>
     <h2>3. The Capacity Cliff &amp; Interference</h2>
     <p>
-      In $\mathbb{R}^d$, at most $d$ orthogonal vectors exist. Once stored pairs $N > d$, cross-talk corrupts retrieval:
+      In <em>R<sup>d</sup></em>, at most <em>d</em> orthogonal vectors exist. Once stored pairs <em>N &gt; d</em>, cross-talk corrupts retrieval:
     </p>
     <ul>
-      <li><strong>Sub-capacity ($N \le d$):</strong> Cosine similarity $\approx 1.0$; near-perfect recall.</li>
-      <li><strong>Critical Threshold ($N \approx d$):</strong> Interference noise equals primary signal.</li>
-      <li><strong>Interference Regime ($N \gg d$):</strong> Accuracy plunges toward $1/\sqrt{d}$ noise floor.</li>
+      <li><strong>Sub-capacity (<em>N &le; d</em>):</strong> Cosine similarity <em>&asymp; 1.0</em>; near-perfect recall.</li>
+      <li><strong>Critical Threshold (<em>N &asymp; d</em>):</strong> Interference noise equals primary signal.</li>
+      <li><strong>Interference Regime (<em>N &gg; d</em>):</strong> Accuracy plunges toward <em>1/&radic;d</em> noise floor.</li>
     </ul>
     <p>
       Interference is not a numerical error; it is the fundamental information-theoretic tax of bounded state compression.
@@ -171,31 +171,31 @@ Autoregressive Transformers enable in-context learning via an explicit key&ndash
   <tbody>
     <tr>
       <td><strong>Transformer (KV-Cache)</strong></td>
-      <td>$O(n)$ sequence length</td>
+      <td><code>O(n)</code> sequence length</td>
       <td>Append key &amp; value token vectors</td>
       <td>In-context lookup over token buffer</td>
       <td>VRAM &amp; memory bandwidth exhaustion</td>
     </tr>
     <tr>
       <td><strong>Infini-attention (arXiv:2404.07143)</strong></td>
-      <td>$O(1)$ compressive block</td>
+      <td><code>O(1)</code> compressive block</td>
       <td>M &larr; M + &sigma;(v) &middot; &sigma;(k)<sup>T</sup></td>
       <td>Linear memory readout + local attention</td>
       <td>State saturation over unbounded contexts</td>
     </tr>
     <tr>
       <td><strong>Titans (arXiv:2501.00663)</strong></td>
-      <td>$O(1)$ neural memory module</td>
+      <td><code>O(1)</code> neural memory module</td>
       <td>Neural gradient test-time step</td>
       <td>Learned test-time associative memory</td>
       <td>Dual-system computational overhead</td>
     </tr>
     <tr>
       <td><strong>BDH / BDH-CQ (Pathway)</strong></td>
-      <td>$O(1)$ synaptic state matrix</td>
+      <td><code>O(1)</code> synaptic state matrix</td>
       <td>M &larr; M + v &middot; k<sup>T</sup> (Hebbian)</td>
       <td>Zero-gradient demonstration absorption</td>
-      <td>Orthogonality capacity cliff ($N > d$)</td>
+      <td>Orthogonality capacity cliff (<em>N &gt; d</em>)</td>
     </tr>
   </tbody>
 </table>
@@ -211,7 +211,7 @@ Autoregressive Transformers enable in-context learning via an explicit key&ndash
   <div>
     <h2>6. Evidence Discipline &amp; Honest Limitations</h2>
     <ul>
-      <li><span class="highlight-tag">Self-Reported Benchmark</span> <strong>29.5% pass@2</strong> on ARC-AGI-1 ($0.0007/task) is audited by partner-institution co-authors, not an arm's-length external lab. Scaling laws across multi-scale models remain unproven.</li>
+      <li><span class="highlight-tag">Self-Reported Benchmark</span> <strong>29.5% pass@2</strong> on ARC-AGI-1 (<code>$0.0007/task</code>) is audited by partner-institution co-authors, not an arm's-length external lab. Scaling laws across multi-scale models remain unproven.</li>
       <li><strong>Disclosed Failure:</strong> BDH-CQ failed completely (0/72) on color-swap composition tasks, exposing vulnerability of pure outer-product states to relational logic.</li>
       <li><strong>Didactic Scope:</strong> Explainer runs live mathematical Hebbian updates in JS/TS to illuminate principles, without misrepresenting itself as the proprietary engine.</li>
     </ul>

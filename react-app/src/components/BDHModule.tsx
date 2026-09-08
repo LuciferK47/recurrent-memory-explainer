@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { vectorFromText } from '../lib/memory-math';
+import { writeWithDecayInto, meanRecallFlat } from '../lib/memory-math-flat';
+import { useMemoryStore, useMemorySelector } from '../state/memory-store';
+import { EquationTerm } from './ui/EquationTerm';
+import { ArcSandbox } from './ArcSandbox';
+import { Panel } from './ui/Panel';
+import { Badge } from './ui/Badge';
 
-// ARC Colors palette for the original illustration grid
-const ARC_COLORS: Record<number, string> = {
+// ARC Colors palette for the original illustration grid (kept app-consistent with the
+// rest of the semantic palette — memory/truth/interference — rather than the raw hex
+// values embedded in data/bdh_cq_demo_tasks.json).
+export const ARC_COLORS: Record<number, string> = {
   0: '#1a1a2e',
   1: '#c04928', // interference / red tone
   2: '#1b7a4e', // truth / green tone
@@ -14,82 +23,87 @@ const ARC_COLORS: Record<number, string> = {
   9: '#646464',
 };
 
-// Original illustrative ARC task demo data
-const DEMO_STEPS = [
-  {
-    step: 1,
-    title: 'See Demo Pair #1',
-    description: 'The model receives an input→output example: "Fill the enclosed 3x3 region with green."',
-    inputGrid: [
-      [1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1],
-    ],
-    outputGrid: [
-      [1, 1, 1, 1, 1],
-      [1, 2, 2, 2, 1],
-      [1, 2, 2, 2, 1],
-      [1, 2, 2, 2, 1],
-      [1, 1, 1, 1, 1],
-    ],
-    explanation: 'Demonstration 1 is tokenized and prepared for projection into key and value representation.',
-  },
-  {
-    step: 2,
-    title: 'Write Demo #1 into Recurrent State',
-    description: 'The demo is encoded and written into the fixed-size state matrix via Hebbian update. State accumulates additively — same outer-product write.',
-    hasMatrix: true,
-    matrixHighlight: 'M_1 = v_1 · k_1^T',
-    explanation: 'Synaptic connections are reinforced between the input boundary representation and the filled region output.',
-  },
-  {
-    step: 3,
-    title: 'See Demo Pair #2 → Write Again',
-    description: 'A second example reinforces the pattern: "Enclosed region with different boundary". State grows richer.',
-    inputGrid: [
-      [3, 3, 3, 3],
-      [3, 0, 0, 3],
-      [3, 0, 0, 3],
-      [3, 3, 3, 3],
-    ],
-    outputGrid: [
-      [3, 3, 3, 3],
-      [3, 2, 2, 3],
-      [3, 2, 2, 3],
-      [3, 3, 3, 3],
-    ],
-    hasMatrix: true,
-    matrixHighlight: 'M_2 = M_1 + v_2 · k_2^T',
-    explanation: 'Hebbian update writes demonstration 2 into the existing state. Rank of M increases.',
-  },
-  {
-    step: 4,
-    title: 'Test: Apply Learned Rule to New Input',
-    description: 'The model reads from its recurrent state to predict the output for an unseen input. No gradient update was needed — the rule was absorbed into the state.',
-    testInput: [
-      [4, 4, 4, 4, 4],
-      [4, 0, 0, 0, 4],
-      [4, 0, 0, 0, 4],
-      [4, 4, 4, 4, 4],
-    ],
-    testPredicted: [
-      [4, 4, 4, 4, 4],
-      [4, 2, 2, 2, 4],
-      [4, 2, 2, 2, 4],
-      [4, 4, 4, 4, 4],
-    ],
-    explanation: 'Linear readout M · q retrieves the transformation rule, solving the test example in one forward pass.',
-  },
-];
+interface Demonstration {
+  input: number[][];
+  output: number[][];
+}
 
-function renderMiniGrid(grid: number[][]) {
+interface DemoTask {
+  id: string;
+  name: string;
+  description: string;
+  demonstrations: Demonstration[];
+  test: { input: number[][]; expected_output: number[][] };
+}
+
+interface DemoTasksFile {
+  description: string;
+  label: string;
+  tasks: DemoTask[];
+}
+
+interface DemoStep {
+  step: number;
+  title: string;
+  description: string;
+  inputGrid?: number[][];
+  outputGrid?: number[][];
+  hasMatrix?: boolean;
+  matrixHighlight?: string;
+  testInput?: number[][];
+  testPredicted?: number[][];
+  explanation: string;
+}
+
+// Derive the 4-step Hebbian-write walkthrough from one precomputed ARC-style task.
+function buildStepsForTask(task: DemoTask): DemoStep[] {
+  const [demo1, demo2] = task.demonstrations;
+  return [
+    {
+      step: 1,
+      title: 'See Demo Pair #1',
+      description: `The model receives an input→output example for "${task.name}": ${task.description}`,
+      inputGrid: demo1.input,
+      outputGrid: demo1.output,
+      explanation: 'Demonstration 1 is tokenized and prepared for projection into key and value representation.',
+    },
+    {
+      step: 2,
+      title: 'Write Demo #1 into Recurrent State',
+      description: 'The demo is encoded and written into the fixed-size state matrix via Hebbian update. State accumulates additively — same outer-product write.',
+      hasMatrix: true,
+      matrixHighlight: 'M_1 = v_1 · k_1^T',
+      explanation: 'Synaptic connections are reinforced between the input representation and the demonstrated output.',
+    },
+    {
+      step: 3,
+      title: 'See Demo Pair #2 → Write Again',
+      description: demo2
+        ? 'A second example reinforces the pattern. State grows richer.'
+        : 'This task ships only one demonstration in the precomputed set.',
+      inputGrid: demo2?.input,
+      outputGrid: demo2?.output,
+      hasMatrix: true,
+      matrixHighlight: 'M_2 = M_1 + v_2 · k_2^T',
+      explanation: 'Hebbian update writes demonstration 2 into the existing state. Rank of M increases.',
+    },
+    {
+      step: 4,
+      title: 'Test: Apply Learned Rule to New Input',
+      description: 'The model reads from its recurrent state to predict the output for an unseen input. No gradient update was needed — the rule was absorbed into the state.',
+      testInput: task.test.input,
+      testPredicted: task.test.expected_output,
+      explanation: 'Linear readout M · q retrieves the transformation rule, solving the test example in one forward pass.',
+    },
+  ];
+}
+
+export function renderMiniGrid(grid: number[][]) {
   const rows = grid.length;
   const cols = grid[0].length;
   return (
     <div
-      className="inline-grid gap-[2px] bg-ink border border-border p-1 rounded"
+      className="inline-grid gap-[2px] bg-canvas border border-border p-1 rounded"
       style={{
         gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
       }}
@@ -109,22 +123,70 @@ function renderMiniGrid(grid: number[][]) {
 
 export const BDHModule: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [taskIndex, setTaskIndex] = useState(0);
+  const [tasksFile, setTasksFile] = useState<DemoTasksFile | null>(null);
+  const [mode, setMode] = useState<'walkthrough' | 'sandbox'>('walkthrough');
 
-  const stepData = DEMO_STEPS[currentStep];
+  const baseUrl = import.meta.env.BASE_URL || './';
+
+  // Load the precomputed ARC-style demonstration tasks generated by
+  // scripts/precompute_bdh_demo.py (data/bdh_cq_demo_tasks.json) — the same
+  // precomputation pipeline used by the Breaking Point sweep, applied here.
+  useEffect(() => {
+    fetch(`${baseUrl}data/bdh_cq_demo_tasks.json`)
+      .then(r => r.json())
+      .then((data: DemoTasksFile) => setTasksFile(data))
+      .catch(err => console.warn('Could not fetch BDH-CQ demo tasks:', err));
+  }, [baseUrl]);
+
+  const activeTask = tasksFile?.tasks?.[taskIndex];
+  const demoSteps = useMemo(() => (activeTask ? buildStepsForTask(activeTask) : []), [activeTask]);
+  const stepData = demoSteps[currentStep];
+
+  const handleTaskChange = (idx: number) => {
+    setTaskIndex(idx);
+    setCurrentStep(0);
+  };
+
+  // Learning-rate / decay control — reads and writes the SAME shared store
+  // as MemoryLab and the Stage, so this genuinely replaces the write path
+  // rather than decorating an unused eta in the equation display above.
+  const store = useMemoryStore();
+  const dim = useMemorySelector(s => s.dim);
+  const pairCount = useMemorySelector(s => s.pairs.length);
+  const matrixFlat = useMemorySelector(s => s.matrix);
+  const pairs = useMemorySelector(s => s.pairs);
+
+  const [eta, setEta] = useState(1);
+  const [lambda, setLambda] = useState(0);
+  const decayKeep = 1 - lambda;
+
+  // Deterministic per-task demo pair — stable across slider drags (only
+  // eta/lambda should visibly move), regenerated when the task changes.
+  const previewPair = useMemo(() => {
+    const seed = activeTask ? activeTask.id : 'bdh-demo-default';
+    return { key: vectorFromText(`${seed}:decay-key`, dim), value: vectorFromText(`${seed}:decay-value`, dim) };
+  }, [activeTask, dim]);
+
+  const meanRecallBefore = useMemo(() => meanRecallFlat(matrixFlat, dim, pairs), [matrixFlat, dim, pairs]);
+
+  // Simulate the decay-write against a scratch copy of the live matrix,
+  // without committing it, so dragging the sliders is free to explore.
+  const meanRecallAfter = useMemo(() => {
+    const simulated = new Float32Array(matrixFlat);
+    writeWithDecayInto(simulated, dim, previewPair.key, previewPair.value, eta, lambda);
+    return meanRecallFlat(simulated, dim, pairs);
+  }, [matrixFlat, dim, pairs, previewPair, eta, lambda]);
+
+  const handleWriteDecay = () => {
+    const label = `${activeTask ? activeTask.name : 'demo'} @ η=${eta.toFixed(2)}, λ=${lambda.toFixed(2)}`;
+    store.addPair(previewPair.key, previewPair.value, label, eta, lambda);
+  };
 
   return (
-    <section id="bdh" className="py-16 border-t border-border">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="text-sm font-display text-ink-muted mb-2">03 BDH Connection</div>
-        <h2 className="text-3xl sm:text-4xl font-display text-ink mb-3">
-          How BDH and BDH-CQ Use This Mechanism
-        </h2>
-        <p className="text-base text-ink-muted max-w-2xl mb-8 leading-relaxed">
-          The outer-product write you just used <em>is</em> BDH's core memory mechanism. Here's how it works in the actual architecture.
-        </p>
-
+    <div>
         {/* Learning Objective Card */}
-        <div className="bg-surface/80 border border-border/80 border-l-4 border-l-truth rounded-xl p-6 mb-6 shadow-sm backdrop-blur-sm">
+        <Panel tone="truth" className="border-l-4 border-l-truth p-6 mb-6">
           <h3 className="text-lg font-display text-ink mb-2">Learning Objective</h3>
           <p className="text-sm text-ink-muted leading-relaxed m-0">
             After this section, you should be able to explain:{' '}
@@ -132,10 +194,10 @@ export const BDHModule: React.FC = () => {
               BDH stores attention as synaptic memory that updates via Hebbian writes as the model reads. BDH-CQ extends this to absorb demonstration examples into recurrent state — enabling in-context learning without gradient updates.
             </strong>
           </p>
-        </div>
+        </Panel>
 
         {/* BDH Architecture Overview Card */}
-        <div className="bg-surface/90 border border-border/80 rounded-xl p-6 mb-8 shadow-md backdrop-blur-sm">
+        <Panel className="p-6 mb-8">
           <h3 className="text-xl font-display text-ink mb-3">BDH: Attention as Synaptic Memory</h3>
           <p className="text-sm text-ink leading-relaxed mb-4">
             In a standard Transformer, attention is a lookup: query against stored keys to retrieve values. In{' '}
@@ -144,23 +206,107 @@ export const BDHModule: React.FC = () => {
               href="https://arxiv.org/abs/2509.26507"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-memory hover:underline"
+              className="text-memory underline"
             >
               arXiv:2509.26507
             </a>
             ), this lookup is reformulated as <em>synaptic memory</em> — connections between neuron-like units that strengthen when related concepts co-occur.
           </p>
 
-          <div className="bg-surface-elevated/80 border border-border/80 rounded-lg p-4 mb-4 text-center">
-            <span className="font-mono text-memory text-sm sm:text-base font-medium">
-              S(t) = S(t−1) + η · v(t) · k(t)<sup>T</sup> &nbsp;&nbsp;<span className="text-ink-muted text-xs font-sans">(Hebbian synaptic update)</span>
-            </span>
-          </div>
+          <div className="bg-canvas border border-border rounded-lg p-4 mb-4">
+            <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+              <span className="text-xs font-mono uppercase font-semibold text-ink-muted">Live: learning rate &amp; decay</span>
+              <code className="text-sm font-mono text-memory bg-surface-elevated px-2 py-1 rounded border border-border/80">
+                <EquationTerm axis="m">S(t)</EquationTerm> = {decayKeep.toFixed(2)}&middot;
+                <EquationTerm axis="m">S(t&minus;1)</EquationTerm> + {eta.toFixed(2)}&middot;
+                <EquationTerm axis="v">v(t)</EquationTerm>&middot;<EquationTerm axis="k">k(t)</EquationTerm>
+                <sup>T</sup>
+              </code>
+            </div>
+            <p className="text-[10px] text-ink-faint font-sans mt-1.5 mb-0">
+              Hover a symbol above — it lights up the matching region on the Stage diagram on the right (while this section is on screen).
+            </p>
+            <p className="text-xs text-ink-muted leading-relaxed mb-4">
+              This is the outer-product write <code className="text-memory bg-surface-elevated px-1.5 py-0.5 rounded text-xs">M &larr; M + v &middot; k<sup>T</sup></code>{' '}
+              from Section 2, generalized: <strong className="text-ink">η</strong> scales how strongly a new write lands; <strong className="text-ink">λ</strong> uniformly
+              decays everything already stored before it lands — the mechanism behind gated write-rate variants (Gated DeltaNet, Titans — see{' '}
+              <code className="text-ink">docs/citations.md</code>). Default η=1, λ=0 reproduces the plain Hebbian write used everywhere else on this page exactly; drag
+              either slider and the next write below genuinely routes through this formula, into the <em>same</em> shared matrix driving the Stage on the right.
+            </p>
 
-          <p className="text-sm text-ink leading-relaxed mb-3">
-            This is exactly the outer-product write <code className="text-memory bg-surface-elevated px-1.5 py-0.5 rounded text-xs">M &larr; M + v &middot; k<sup>T</sup></code> you used in Section 2.{' '}
-            <strong>S</strong> is the synapse matrix (fixed-size), <strong>v</strong> and <strong>k</strong> are the value and key at time <em>t</em>, and <strong>η</strong> is a learning rate.
-          </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label htmlFor="eta-slider" className="flex items-center justify-between text-xs font-mono text-ink-muted mb-1.5">
+                  <span>&eta; (learning rate)</span>
+                  <span className="text-ink font-semibold">{eta.toFixed(2)}</span>
+                </label>
+                <input
+                  id="eta-slider"
+                  type="range"
+                  min={0.2}
+                  max={1.5}
+                  step={0.05}
+                  value={eta}
+                  onChange={e => setEta(Number(e.target.value))}
+                  aria-label="Learning rate eta"
+                  className="w-full accent-memory"
+                />
+              </div>
+              <div>
+                <label htmlFor="lambda-slider" className="flex items-center justify-between text-xs font-mono text-ink-muted mb-1.5">
+                  <span>&lambda; (decay)</span>
+                  <span className="text-ink font-semibold">{lambda.toFixed(2)}</span>
+                </label>
+                <input
+                  id="lambda-slider"
+                  type="range"
+                  min={0}
+                  max={0.6}
+                  step={0.05}
+                  value={lambda}
+                  onChange={e => setLambda(Number(e.target.value))}
+                  aria-label="Decay rate lambda"
+                  className="w-full accent-interference"
+                />
+              </div>
+            </div>
+
+            {pairCount > 0 && (
+              <div className="p-3 rounded-lg bg-surface border border-border font-mono text-xs space-y-2 mb-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-ink-muted">
+                    Mean recall across {pairCount} stored pair{pairCount === 1 ? '' : 's'}, now
+                  </span>
+                  <span className="text-ink font-semibold">{(meanRecallBefore * 100).toFixed(1)}%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-ink-muted">&hellip;right after this write lands</span>
+                  <span
+                    className={`font-semibold ${
+                      meanRecallAfter >= 0.85 ? 'text-truth' : meanRecallAfter >= 0.65 ? 'text-memory' : 'text-interference'
+                    }`}
+                  >
+                    {(meanRecallAfter * 100).toFixed(1)}%
+                  </span>
+                </div>
+                {lambda > 0 && (
+                  <div className="text-[10px] text-ink-faint font-sans pt-1 border-t border-border/60">
+                    That drop beyond ordinary cross-talk is &lambda; forgetting older associations — a second, independent interference mechanism from the θ-angle
+                    cross-talk in Section 2's sandbox.
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={handleWriteDecay}
+              className="w-full py-2.5 rounded-lg bg-memory/15 text-memory hover:bg-memory/25 border border-memory/40 font-medium text-xs font-mono transition-all flex items-center justify-center gap-2"
+            >
+              <span>
+                Write this task's demo pair at &eta;={eta.toFixed(2)}, &lambda;={lambda.toFixed(2)} into shared Memory Matrix
+              </span>
+            </button>
+          </div>
 
           <p className="text-xs text-ink-muted leading-relaxed m-0 border-t border-border/70 pt-3">
             Key distinction: BDH is <em>not</em> an SSM in the Mamba sense. BDH models neuron-synapse interactions on a scale-free graph; BDH-GPU is a separate GPU-friendly reformulation using ReLU/low-rank transformations with linear attention (
@@ -168,21 +314,19 @@ export const BDHModule: React.FC = () => {
               href="https://arxiv.org/abs/2509.26507"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-memory hover:underline"
+              className="text-memory underline"
             >
               arXiv:2509.26507
             </a>
             , Section 4).
           </p>
-        </div>
+        </Panel>
 
         {/* BDH-CQ Walkthrough Step-Through Card */}
-        <div className="bg-surface/90 border border-border/80 rounded-xl p-6 mb-4 shadow-md backdrop-blur-sm">
+        <Panel className="p-6 mb-4">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <h3 className="text-xl font-display text-ink m-0">BDH-CQ: Learning from Demonstrations</h3>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded border border-border/80 bg-surface-elevated text-ink-muted">
-              illustration
-            </span>
+            <Badge tone="illustration">illustration</Badge>
           </div>
 
           <p className="text-sm text-ink-muted mb-6">
@@ -191,121 +335,159 @@ export const BDHModule: React.FC = () => {
               href="https://arxiv.org/abs/2608.09888"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-memory hover:underline"
+              className="text-memory underline"
             >
               arXiv:2608.09888
             </a>
             ) extends BDH to learn from a few demonstration examples at inference time. Each demo pair is written into recurrent state. No gradient update. No chain-of-thought tokens. Click through to explore:
           </p>
 
-          {/* Stepper Navigation */}
-          <div className="flex items-center gap-2 mb-6 border-b border-border/70 pb-3">
-            {DEMO_STEPS.map((s, idx) => (
-              <button
-                key={s.step}
-                onClick={() => setCurrentStep(idx)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  currentStep === idx
-                    ? 'bg-memory/15 text-memory border border-memory/60 font-semibold shadow-[0_0_12px_rgba(0,210,255,0.2)]'
-                    : 'bg-surface border border-border/80 text-ink-muted hover:text-ink hover:bg-surface-elevated'
-                }`}
-              >
-                Step {s.step}
-              </button>
-            ))}
+          {/* Mode toggle: the precomputed 4-step walkthrough, or the playable sandbox below */}
+          <div className="flex items-center gap-1.5 p-1 bg-linen/80 rounded-lg border border-border w-fit mb-5">
+            <button
+              onClick={() => setMode('walkthrough')}
+              className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                mode === 'walkthrough' ? 'bg-surface text-ink shadow-sm border border-border/80 font-semibold' : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              Walkthrough
+            </button>
+            <button
+              onClick={() => setMode('sandbox')}
+              className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                mode === 'sandbox' ? 'bg-surface text-ink shadow-sm border border-border/80 font-semibold' : 'text-ink-muted hover:text-ink'
+              }`}
+            >
+              Try It Yourself
+            </button>
           </div>
 
-          {/* Current Step Content */}
-          <div className="bg-surface-elevated/40 border border-border/80 rounded-xl p-5 mb-6">
-            <div className="text-xs font-mono font-semibold text-memory uppercase mb-1">
-              Step {stepData.step} of 4
+          {mode === 'sandbox' && <ArcSandbox />}
+
+          {/* Task Selector — switch between the precomputed ARC-style rules */}
+          {mode === 'walkthrough' && tasksFile && tasksFile.tasks.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span className="text-[11px] font-mono text-ink-muted uppercase mr-1">Rule:</span>
+              {tasksFile.tasks.map((t, idx) => (
+                <button
+                  key={t.id}
+                  onClick={() => handleTaskChange(idx)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    taskIndex === idx
+                      ? 'bg-truth/15 text-truth border border-truth/50 font-semibold'
+                      : 'bg-surface border border-border/80 text-ink-muted hover:text-ink hover:bg-surface-elevated'
+                  }`}
+                >
+                  {t.name}
+                </button>
+              ))}
             </div>
-            <h4 className="text-lg font-display text-ink mb-2">{stepData.title}</h4>
-            <p className="text-sm text-ink-muted mb-4">{stepData.description}</p>
+          )}
 
-            {/* Visual demo grids */}
-            {stepData.inputGrid && stepData.outputGrid && (
-              <div className="flex flex-wrap items-center justify-center gap-6 my-4 p-4 bg-surface rounded-lg border border-border/80">
-                <div className="text-center">
-                  <div className="text-[11px] font-mono text-ink-muted uppercase mb-1">Input Grid</div>
-                  {renderMiniGrid(stepData.inputGrid)}
-                </div>
-                <div className="text-ink-muted text-xl">&rarr;</div>
-                <div className="text-center">
-                  <div className="text-[11px] font-mono text-ink-muted uppercase mb-1">Demonstration Output</div>
-                  {renderMiniGrid(stepData.outputGrid)}
-                </div>
+          {mode === 'walkthrough' && (!tasksFile || !stepData ? (
+            <div className="py-12 text-center text-xs text-ink-muted font-mono">
+              Loading precomputed demonstration tasks…
+            </div>
+          ) : (
+            <>
+              {/* Stepper Navigation */}
+              <div className="flex items-center gap-2 mb-6 border-b border-border/70 pb-3">
+                {demoSteps.map((s, idx) => (
+                  <button
+                    key={s.step}
+                    onClick={() => setCurrentStep(idx)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      currentStep === idx
+                        ? 'bg-memory/15 text-memory border border-memory/60 font-semibold shadow-[0_0_12px_rgba(0,210,255,0.2)]'
+                        : 'bg-surface border border-border/80 text-ink-muted hover:text-ink hover:bg-surface-elevated'
+                    }`}
+                  >
+                    Step {s.step}
+                  </button>
+                ))}
               </div>
-            )}
 
-            {stepData.hasMatrix && (
-              <div className="my-4 p-4 bg-surface rounded-lg border border-border/80 flex flex-col items-center">
-                <div className="text-xs font-mono text-memory font-medium mb-2">
-                  {stepData.matrixHighlight}
+              {/* Current Step Content */}
+              <div className="bg-surface-elevated/40 border border-border/80 rounded-xl p-5 mb-6">
+                <div className="text-xs font-mono font-semibold text-memory uppercase mb-1">
+                  Step {stepData.step} of 4
                 </div>
-                <div className="w-32 h-32 bg-canvas border border-border/80 rounded-lg grid grid-cols-4 grid-rows-4 gap-1 p-2 shadow-inner">
-                  {Array.from({ length: 16 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="rounded-sm transition-colors"
-                      style={{
-                        backgroundColor: i % 3 === 0 ? '#00D2FF' : i % 5 === 0 ? '#FF4D4D' : '#181D29',
-                        opacity: 0.85,
-                      }}
-                    />
-                  ))}
-                </div>
+                <h4 className="text-lg font-display text-ink mb-2">{stepData.title}</h4>
+                <p className="text-sm text-ink-muted mb-4">{stepData.description}</p>
+
+                {/* Visual demo grids */}
+                {stepData.inputGrid && stepData.outputGrid && (
+                  <div className="flex flex-wrap items-center justify-center gap-6 my-4 p-4 bg-surface rounded-lg border border-border/80">
+                    <div className="text-center">
+                      <div className="text-[11px] font-mono text-ink-muted uppercase mb-1">Input Grid</div>
+                      {renderMiniGrid(stepData.inputGrid)}
+                    </div>
+                    <div className="text-ink-muted text-xl">&rarr;</div>
+                    <div className="text-center">
+                      <div className="text-[11px] font-mono text-ink-muted uppercase mb-1">Demonstration Output</div>
+                      {renderMiniGrid(stepData.outputGrid)}
+                    </div>
+                  </div>
+                )}
+
+                {stepData.hasMatrix && (
+                  <div className="my-4 p-4 bg-surface rounded-lg border border-border/80 text-center">
+                    <div className="text-xs font-mono text-memory font-medium mb-1">{stepData.matrixHighlight}</div>
+                    <p className="text-[11px] text-ink-muted italic m-0">
+                      This is the same outer-product write shown live as a synaptic graph on the right.
+                    </p>
+                  </div>
+                )}
+
+                {stepData.testInput && stepData.testPredicted && (
+                  <div className="flex flex-wrap items-center justify-center gap-6 my-4 p-4 bg-surface rounded-lg border border-border/80">
+                    <div className="text-center">
+                      <div className="text-[11px] font-mono text-ink-muted uppercase mb-1">Test Input</div>
+                      {renderMiniGrid(stepData.testInput)}
+                    </div>
+                    <div className="text-ink-muted text-xl">&rarr;</div>
+                    <div className="text-center">
+                      <div className="text-[11px] font-mono text-truth font-semibold uppercase mb-1">Retrieved Output</div>
+                      {renderMiniGrid(stepData.testPredicted)}
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-xs text-ink-muted m-0 italic">{stepData.explanation}</p>
               </div>
-            )}
 
-            {stepData.testInput && stepData.testPredicted && (
-              <div className="flex flex-wrap items-center justify-center gap-6 my-4 p-4 bg-surface rounded-lg border border-border/80">
-                <div className="text-center">
-                  <div className="text-[11px] font-mono text-ink-muted uppercase mb-1">Test Input</div>
-                  {renderMiniGrid(stepData.testInput)}
-                </div>
-                <div className="text-ink-muted text-xl">&rarr;</div>
-                <div className="text-center">
-                  <div className="text-[11px] font-mono text-truth font-semibold uppercase mb-1">Retrieved Output</div>
-                  {renderMiniGrid(stepData.testPredicted)}
-                </div>
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+                  disabled={currentStep === 0}
+                  className="border border-border/80 text-ink hover:bg-surface-elevated disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-xs font-medium transition-all"
+                >
+                  &larr; Previous
+                </button>
+                <button
+                  onClick={() => setCurrentStep(prev => Math.min(demoSteps.length - 1, prev + 1))}
+                  disabled={currentStep === demoSteps.length - 1}
+                  className="bg-memory/15 border border-memory/60 text-memory hover:bg-memory/25 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-xs font-medium transition-all shadow-[0_0_10px_rgba(0,210,255,0.15)]"
+                >
+                  Next Step &rarr;
+                </button>
               </div>
-            )}
-
-            <p className="text-xs text-ink-muted m-0 italic">{stepData.explanation}</p>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
-              disabled={currentStep === 0}
-              className="border border-border/80 text-ink hover:bg-surface-elevated disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-xs font-medium transition-all"
-            >
-              &larr; Previous
-            </button>
-            <button
-              onClick={() => setCurrentStep(prev => Math.min(DEMO_STEPS.length - 1, prev + 1))}
-              disabled={currentStep === DEMO_STEPS.length - 1}
-              className="bg-memory/15 border border-memory/60 text-memory hover:bg-memory/25 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded-lg text-xs font-medium transition-all shadow-[0_0_10px_rgba(0,210,255,0.15)]"
-            >
-              Next Step &rarr;
-            </button>
-          </div>
+            </>
+          ))}
 
           <p className="text-xs text-ink-muted italic border-t border-border/70 pt-3 mt-6 mb-0">
-            This walkthrough illustrates the published BDH-CQ mechanism (
+            Data: <code className="text-memory bg-surface-elevated px-1 py-0.5 rounded text-[11px]">data/bdh_cq_demo_tasks.json</code> (generated by <code className="text-memory bg-surface-elevated px-1 py-0.5 rounded text-[11px]">scripts/precompute_bdh_demo.py</code>). This walkthrough illustrates the published BDH-CQ mechanism (
             <a
               href="https://arxiv.org/abs/2608.09888"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-memory hover:underline not-italic"
+              className="text-memory underline not-italic"
             >
               arXiv:2608.09888
             </a>
             , Section 3). It is not live BDH-CQ inference. Grid tasks are original examples, not from the ARC-AGI dataset.
           </p>
-        </div>
-      </div>
-    </section>
+        </Panel>
+    </div>
   );
 };

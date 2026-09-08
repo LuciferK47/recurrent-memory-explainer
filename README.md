@@ -68,7 +68,6 @@ recurrent-memory-explainer/
 │   │       ├── WriteAnnouncer.tsx      # One aria-live region for every write/clear on the page
 │   │       ├── illustrations/          # Isometric spot-icon suite (section anchors)
 │   │       └── ui/                     # Panel, Badge, Button, SectionHeader, Reveal, GlassIcon, EquationTerm
-├── index.html, js/, css/          # Legacy reference prototype (static vanilla HTML) — not the submission artifact
 ├── data/                          # interference_sweep.json, bdh_cq_demo_tasks.json — both self-labeled with provenance
 ├── scripts/                       # precompute_interference.py, precompute_bdh_demo.py, generate_readme_html.py
 ├── docs/
@@ -114,14 +113,6 @@ npm run dev
 # Build for production
 npm run build
 # -> Compiles static bundle to react-app/dist/
-```
-
-### Running the Legacy Prototype (Static Vanilla HTML/JS)
-
-```bash
-# From the root repository directory
-python3 -m http.server 8080
-# -> Visit http://localhost:8080/ in any standard browser
 ```
 
 ### Precomputing Sweeps (Optional Python Reproduction)

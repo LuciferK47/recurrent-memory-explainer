@@ -51,9 +51,6 @@ Pathway_IITKGP/
 │   │   │   ├── CitationsModal.tsx # In-app rendered markdown & KaTeX citations viewer
 │   │   │   └── Footer.tsx         # Five unambiguous destination links & citations
 │   │   └── index.css              # Custom Departure Mono, Fraunces, and Inter typography tokens
-├── index.html                     # Legacy reference prototype (static vanilla HTML)
-├── js/app.js                      # Legacy prototype script
-├── css/style.css                  # Legacy prototype stylesheet
 ├── docs/
 │   ├── citations.md               # Primary literature catalog (Group A & Group B)
 │   ├── citations.html             # Pre-rendered standalone citations viewer with KaTeX
@@ -94,14 +91,6 @@ npm run dev
 # Build for production
 npm run build
 # -> Compiles static bundle to react-app/dist/
-```
-
-### Running the Legacy Prototype (Static Vanilla HTML/JS)
-
-```bash
-# From the root repository directory
-python3 -m http.server 8080
-# -> Visit http://localhost:8080/ in any standard browser
 ```
 
 ### Precomputing Sweeps (Optional Python Reproduction)

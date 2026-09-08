@@ -4,7 +4,7 @@ This document outlines the architecture, user interface (UI), and core logic ("b
 
 Our goal was to build a highly interactive, beautifully designed explainer that demonstrates how a fixed-size recurrent memory (like the one used in BDH and BDH-CQ) learns from demonstrations and eventually forgets due to interference.
 
-> **Authoritative artifact:** the production **React 19 + TypeScript + Vite + Tailwind** application in `react-app/` is what is deployed and judged. A vanilla HTML/CSS/JS prototype also lives at the repo root (`index.html`, `js/`, `css/`) — it is retained only as a low-dependency reference and is described separately in [Section 6](#6-legacy-prototype-reference-only). Everything below (Sections 1–5) describes `react-app/`.
+> **Authoritative artifact:** the production **React 19 + TypeScript + Vite + Tailwind** application in `react-app/` is what is deployed and judged. Everything below describes `react-app/`.
 
 ---
 
@@ -115,16 +115,3 @@ Following the strict hackathon rubric, every piece of data and visualization in 
 * **Self-Reported Benchmark:** Claims taken from the official papers (e.g., the 29.5% pass@2 claim), labeled with its partially-independent-audit status in the Evidence Panel.
 
 This transparent labeling protects the submission from rubric penalties regarding "Evidence Discipline".
-
----
-
-## 6. Legacy Prototype (Reference Only)
-
-The repository root also contains a standalone vanilla HTML/JS/CSS implementation, kept for low-dependency inspection and not part of the judged artifact:
-
-* **Frontend:** Vanilla HTML, CSS, and JS (`index.html`, `css/style.css`).
-* **"Backend" / Substrate:** `js/memory-model.js` implements the same outer-product write / linear readout mechanism as `memory-math.ts`.
-* **Modules:** `js/app.js` and `js/visualizations.js` (canvas charts for the KV-cache comparison and Memory Lab heatmap), `js/bdh-module.js` (step-by-step ARC grid walkthrough), `js/scroll-controller.js` (`IntersectionObserver`-driven fade-ins and dot navigation).
-* **Run it:** `python3 -m http.server 8080` from the repository root, then visit `http://localhost:8080/`.
-
-Any change to the associative-memory mechanism should be made in `react-app/src/lib/memory-math.ts` first; the legacy prototype is not required to stay in sync.

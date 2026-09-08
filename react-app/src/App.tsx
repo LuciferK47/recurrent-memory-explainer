@@ -13,10 +13,6 @@ import { MemoryStoreProvider, useMemoryStore } from './state/memory-store';
 import { randomUnitVector, createRng } from './lib/memory-math';
 import { PRESET_LABELS } from './lib/preset-labels';
 
-// Both modals are documentation viewers behind an explicit click (footer
-// links, or a #citations/#readme deep link) — never needed for the initial
-// render, so their code (plus each modal's own iframe-shell markup) only
-// downloads once a reader actually opens one.
 const CitationsModal = lazy(() => import('./components/CitationsModal').then(m => ({ default: m.CitationsModal })));
 const ReadmeModal = lazy(() => import('./components/ReadmeModal').then(m => ({ default: m.ReadmeModal })));
 
@@ -45,14 +41,7 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    // reducedMotion="user": CSS prefers-reduced-motion (index.css's blanket
-    // animation-duration override) only touches CSS @keyframes/transitions —
-    // it cannot reach motion/* components, which drive values via rAF/WAAPI
-    // instead. This is the app-wide equivalent for every motion.* animation,
-    // Hero's repeat: Infinity pulses included; MotionConfig snaps transform-
-    // based animations (scale, x, y) to their end state automatically. Its
-    // opacity-only loops still need an explicit check (see Hero.tsx) since
-    // reduced-motion mode deliberately leaves plain fades alone.
+    // MotionConfig handles transform animation reduction; Hero gates opacity pulses separately.
     <MotionConfig reducedMotion="user">
       <MemoryStoreProvider initialDim={8}>
         <div className="min-h-screen bg-canvas text-ink flex flex-col selection:bg-memory/20 relative">

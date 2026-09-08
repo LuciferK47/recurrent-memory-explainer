@@ -1,19 +1,4 @@
-/**
- * Scroll position -> {scene, continuous scenePosition}, via motion's scroll
- * engine rather than a hand-rolled scroll listener or IntersectionObserver.
- *
- * Rejected alternatives (see the design plan): IntersectionObserver's
- * intersectionRatio saturates at 1.0 across a full-viewport section — a dead
- * zone exactly where progress resolution matters most. A raw `scroll`
- * listener (the pattern already in Navbar.tsx) does `offsetTop`/`offsetHeight`
- * reads per event — a forced-layout on the scroll path. `useScroll` batches
- * all measurement into one `frame.read` pass and re-measures via
- * ResizeObserver.
- *
- * `scenePosition` is a MotionValue (Tier 2 — 60Hz, zero React renders);
- * `sceneIndex`/`sceneId` are committed to React state only across a
- * hysteresis deadband, so parking exactly on a scene boundary can't thrash.
- */
+/** Maps scroll progress to a continuous scene position and stable scene id. */
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useScroll, useTransform, useMotionValueEvent, MotionValue } from 'motion/react';
 import { SCENES, SCENE_BOUNDS, SceneId } from '../state/scene-spec';

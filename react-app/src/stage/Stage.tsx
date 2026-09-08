@@ -35,19 +35,7 @@ const FLOOD_COUNT = 20;
 const FLOOD_TO_STEP_MS = 55;
 const CLIFF_HISTORY_CAP = 400;
 
-/**
- * The pinned scrollytelling track: narrative copy on the left across four
- * scenes (kv-cache, write, synapse, cliff — see state/scene-spec.ts), a
- * sticky canvas+SVG stage on the right whose persistent matrix morphs
- * between all four as the reader scrolls.
- *
- * This absorbs ProblemComparison's two static charts, MemoryLab's canvas
- * heatmap, BDHModule's fabricated 4x4 grid, and Breaking Point's live flood
- * chart — see the design plan's absorption table. Each retired component's
- * real narrative content (controls, ledger, step-through reader, task
- * selector, citations, precomputed sweep) stays real content here; only the
- * duplicated visualizations are gone, replaced by one shared live view.
- */
+/** Pinned four-scene canvas instrument for the narrative sections. */
 export const Stage: React.FC = () => {
   const scene = useScrollScene();
   const store = useMemoryStore();

@@ -3,8 +3,9 @@
 > **DataForge 2026 &times; Pathway Track Submission**  
 > *Track: Explain the Frontier &mdash; In-Context Learning with Recurrent Memory*
 
+**Site:** https://luciferk47.github.io/recurrent-memory-explainer/
+
 [![Team Repository](https://img.shields.io/badge/GitHub-LuciferK47%2Frecurrent--memory--explainer-blue?logo=github)](https://github.com/LuciferK47/recurrent-memory-explainer)
-[![Live Explainer](https://img.shields.io/badge/Artifact-Live_Web_App-green)](https://luciferk47.github.io/recurrent-memory-explainer/)
 [![Concept Summary PDF](https://img.shields.io/badge/PDF-One--Page_Concept_Summary-red)](concept_summary.pdf)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -106,7 +107,7 @@ python3 scripts/precompute_bdh_demo.py
 <a name="citations"></a>
 ## 5. Citations & References
 
-Full annotations and paper summaries are available in [docs/citations.md](docs/citations.md) and online at [docs/citations.html](https://luciferk47.github.io/recurrent-memory-explainer/docs/citations.html).
+Full annotations and paper summaries are available in [docs/citations.md](docs/citations.md) and [docs/citations.html](docs/citations.html).
 
 ### Group A: General Recurrent Memory & In-Context Learning (2022–2026)
 - **Infini-attention:** Munkhdalai, Faruqui, & Gopal, *Leave No Context Behind: Efficient Infinite Context Transformers with Infini-attention*, [arXiv:2404.07143](https://arxiv.org/abs/2404.07143), 2024.

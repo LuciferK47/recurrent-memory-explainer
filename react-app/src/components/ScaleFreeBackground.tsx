@@ -6,27 +6,7 @@ import { IsoCity, type CityEvent } from './background/IsoCity';
 import { generateCityData } from './background/city-data';
 import { INK, MEMORY, TRUTH, SYNAPSE, DATA, hex } from '../stage/render/theme';
 
-/**
- * The page's background: a full-bleed dark isometric circuit-city (server
- * racks, a CPU block, board traces, a small key→value net board, pixel
- * figures — see components/background/) over a heavily blurred plate of the
- * original reference photo, matching that reference's own composition
- * directly rather than confining the city to thin page margins under a
- * text-protecting mask. The previous light-palette version needed that
- * mask because it had to coexist with dark-on-light body text; now that the
- * whole page (including every card — see ui/Panel.tsx) is dark, panels
- * carry their own opaque-enough glass fill to stay legible over a dense
- * background, so the scene can run at real strength everywhere.
- *
- * The reference photo is never shipped at legible resolution or sharpness —
- * see public/bg-plate.webp's generation note below — only as an atmospheric
- * colour wash; the crisp city on top is entirely coded (components/background/).
- *
- * Live-coupled to the shared memory store: a real write sends a glow
- * traveling along a board trace into the CPU block, with a matching flash
- * on one server-rack cell, so the background reads as part of the
- * instrument rather than decoration (see IsoCity's CpuWritePulse).
- */
+/** Full-bleed isometric circuit-city background coupled to the shared memory store. */
 
 const PALETTE = {
   // Dedicated dark building material — not the theme's `ink` (now light

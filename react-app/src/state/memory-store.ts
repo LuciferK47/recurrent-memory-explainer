@@ -1,29 +1,3 @@
-/**
- * memory-store.ts — external store for the shared associative-memory state.
- *
- * Why external and not React context+reducer: the matrix changes on every
- * write, so a plain context value would re-render every consumer (controls,
- * ledger, capacity meter, scene annotations) on every write regardless of
- * what each actually reads. `useSyncExternalStore` + per-field selectors let
- * each consumer subscribe to only the slice it needs.
- *
- * Three-tier state rule used throughout this app from here on:
- *   1. React state   — via useMemorySelector: dim, pairs, matrix, rev.
- *      Changes at human frequency (clicks), fine to re-render on.
- *   2. MotionValue    — scroll/animation progress (introduced in the Stage
- *      work). Never touches this store.
- *   3. Ref            — `hover` / `focus` below. Mutated directly by pointer
- *      handlers; read directly by the (future) canvas render loop. Never
- *      goes through setState, so a 120Hz mousemove never re-renders React.
- *
- * `createMemoryStore()` is a plain factory with no embedded policy about
- * *what* to write or *why* — random-pair generation, label cycling, and the
- * staged "catchy, not blank" reveal on mount all stay in the consuming
- * component (App.tsx). BreakingPoint's live experiment creates its own
- * separate instance from the same factory rather than duplicating a second,
- * slightly-different copy of this state machine.
- */
-
 import React, { createContext, useContext, useRef, useSyncExternalStore } from 'react';
 import { Vector, createZeroMatrix } from '../lib/memory-math';
 import { toFlat, writeWithDecayInto, maxAbsFlat } from '../lib/memory-math-flat';

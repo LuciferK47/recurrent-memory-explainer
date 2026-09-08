@@ -32,8 +32,6 @@ Standard Transformers rely on an unbounded Key–Value (KV) cache scaling linear
 ## 3. Architecture of the Artifact
 
 > **Authoritative Submission Artifact**: The primary deliverable for this submission is the production **React 19 + TypeScript + Vite + Tailwind** application located in `react-app/`.  
-> *Note on Vanilla Prototype*: A standalone vanilla HTML/JS/CSS implementation in the root directory is retained strictly as a legacy reference prototype for low-dependency inspection, but the React build is the definitive submission deliverable.
-
 ```
 recurrent-memory-explainer/
 ├── react-app/                     # AUTHORITATIVE SUBMISSION ARTIFACT (React 19 + Vite)
